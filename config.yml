@@ -4,6 +4,8 @@ thread: 2
 share-fs-host: http://gw.huabot.com
 share-fs-key: ""
 share-fs-secret: ""
+enable-guetzli: true
+enable-remove: true
 guetzli:
   command: guetzli
   output: guetzli

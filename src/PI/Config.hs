@@ -20,6 +20,8 @@ data Config = Config { periodicHost  :: String
                      , shareFSSecret :: String
                      , guetzliConfig :: GuetzliConfig
                      , resizesConfig :: [ResizeConfig]
+                     , enableRemove  :: Bool
+                     , enableGuetzli :: Bool
                      }
   deriving (Show)
 
@@ -33,4 +35,6 @@ instance FromJSON Config where
     shareFSSecret <- o .:? "share-fs-secret" .!= ""
     guetzliConfig <- o .:? "guetzli"         .!= defaultGuetzliConfig
     resizesConfig <- o .:? "resizes"         .!= []
+    enableRemove  <- o .:? "enable-remove"   .!= False
+    enableGuetzli <- o .:? "enable-guetzli"  .!= False
     return Config {..}

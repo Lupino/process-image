@@ -18,6 +18,7 @@ import           ShareFS.Client        (Gateway (..), initMgr)
 import           Periodic.Client       (Client)
 import           Periodic.Worker       (Worker, addFunc)
 
+import           Control.Monad         (when)
 import           Data.ByteString.Char8 (pack)
 
 initialGateway :: Config -> IO Gateway
@@ -32,8 +33,8 @@ initialGateway Config {..} = initMgr $ Gateway
 
 initialWorker :: Worker -> Client -> Gateway -> Config -> IO ()
 initialWorker w c gw (Config {..}) = do
-  addFunc w "remove" $ removeFile gw
-  addFunc w "guetzli" $ guetzliImage guetzliConfig c gw
+  when enableRemove $ addFunc w "remove" $ removeFile gw
+  when enableGuetzli $ addFunc w "guetzli" $ guetzliImage guetzliConfig c gw
   mapM_ initialResizeImage resizesConfig
 
   where initialResizeImage :: ResizeConfig -> IO ()
