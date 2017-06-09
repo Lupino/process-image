@@ -1,5 +1,5 @@
 periodic-host: 127.0.0.1
-periodic-host: 5000
+periodic-port: 5000
 thread: 2
 share-fs-host: http://127.0.0.1:8080
 share-fs-key: ""

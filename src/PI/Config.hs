@@ -27,8 +27,8 @@ data Config = Config { periodicHost  :: String
 
 instance FromJSON Config where
   parseJSON = withObject "Config" $ \o -> do
-    periodicHost  <- o .:? "perioidc-host"   .!= "127.0.0.1"
-    periodicPort  <- o .:? "perioidc-port"   .!= 5000
+    periodicHost  <- o .:? "periodic-host"   .!= "127.0.0.1"
+    periodicPort  <- o .:? "periodic-port"   .!= 5000
     threadNum     <- o .:? "thread"          .!= 2
     shareFSHost   <- o .:? "share-fs-host"   .!= "http://gw.huabot.com"
     shareFSKey    <- o .:? "share-fs-key"    .!= ""
