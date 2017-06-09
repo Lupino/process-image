@@ -1,0 +1,51 @@
+name:                process-image
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/Lupino/process-image#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Li Meng Jun
+maintainer:          lmjubuntu@gmail.com
+copyright:           MIT
+category:            value
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     PI
+                     , PI.Utils
+                     , PI.GuetzliImage
+                     , PI.ResizeImage
+                     , PI.RemoveFile
+                     , PI.Config
+  build-depends:       base >= 4.7 && < 5
+                     , share-fs-client
+                     , periodic
+                     , bytestring
+                     , hslogger
+
+                     , process-extras
+                     , filepath
+                     , aeson
+
+                     , hip
+  default-language:    Haskell2010
+
+executable process-image
+  hs-source-dirs:      app
+  main-is:             process-image.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , process-image
+                     , periodic
+                     , share-fs-client
+                     , network
+                     , yaml
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/Lupino/process-image
