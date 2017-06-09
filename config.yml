@@ -1,0 +1,31 @@
+periodic-host: 127.0.0.1
+periodic-host: 5000
+thread: 2
+share-fs-host: http://gw.huabot.com
+share-fs-key: ""
+share-fs-secret: ""
+guetzli:
+  command: guetzli
+  output: guetzli
+  delay: 432000
+  # remove after 5 day
+
+resizes:
+  - func: resize-image-fw192
+    width: 100
+    output: resize-image
+    suffix: _fw192.jpg
+    delay: 432000
+    # remove after 5 day
+  - func: resize-image-fw500
+    width: 500
+    output: resize-image
+    suffix: _fw500.jpg
+    delay: 432000
+    # remove after 5 day
+  - func: resize-image-fw64
+    width: 500
+    output: resize-image
+    suffix: _fw64.jpg
+    delay: 432000
+    # remove after 5 day
