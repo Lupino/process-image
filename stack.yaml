@@ -39,8 +39,11 @@ packages:
 - '.'
 - location:
     git: https://github.com/Lupino/haskell-periodic.git
-    commit: 5c57d850b3f54ed6870dfd423fbacb69bf819234
+    commit: f0afa68a0980c77a21391a08d2973e11c95b5fa4
   extra-dep: true
+  subdirs:
+  - periodic-client
+  - periodic-common
 - location:
     git: https://github.com/Lupino/sharefs.git
     commit: 849d7af9e27eb9fde4ace790da9f7bb48adf7c45

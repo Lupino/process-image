@@ -4,9 +4,9 @@ module Main
   ( main
   ) where
 
-import           Network             (PortID (PortNumber))
 import           Periodic.Client     (Client, newClient, submitJob)
 import qualified Periodic.Client     as Client (close)
+import           Periodic.Socket     (connectTo)
 
 import           Control.Monad       (void)
 import           Data.String.Utils   (split)
@@ -50,7 +50,7 @@ program (Options { periodicPort = port
                  , funcNameList = funcs
                  }) = do
 
-  c <- newClient host (PortNumber $ fromIntegral port)
+  c <- newClient =<< connectTo host (show port)
   name <- getLine
   mapM (doSubmit c name) $ split "," funcs
   submitJob c "remove" name 43200
