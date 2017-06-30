@@ -47,8 +47,9 @@ guetzliImage (GuetzliConfig {..}) c gw job = do
       ExitFailure _ -> doJobLater job "guetzli failed"
       ExitSuccess   ->
         putFileAndNext gw job outFileName out $ do
-          submitJob c "upload" outFileName 0
-          submitJob c "remove" outFileName guetzliDelay
+          submitJob c "upload" outFileName' 0
+          submitJob c "remove" outFileName' guetzliDelay
           workDone job
 
-  where outFileName = guetzliOutput </> takeFileName (name job)
+  where outFileName = guetzliOutput </> takeFileName (unpackBS $ name job)
+        outFileName' = packBS outFileName

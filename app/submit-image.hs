@@ -10,6 +10,7 @@ import           Periodic.Socket     (connectTo)
 
 import           Control.Monad       (void)
 import           Data.String.Utils   (split)
+import           PI.Utils            (packBS)
 
 import           Data.Semigroup      ((<>))
 import           Options.Applicative
@@ -53,9 +54,9 @@ program (Options { periodicPort = port
   c <- newClient =<< connectTo host (show port)
   name <- getLine
   mapM (doSubmit c name) $ split "," funcs
-  submitJob c "remove" name 43200
+  submitJob c "remove" (packBS name) 43200
   Client.close c
   putStrLn "OK"
 
 doSubmit :: Client -> FilePath -> String -> IO ()
-doSubmit c fileName funcName = void $ submitJob c funcName fileName 0
+doSubmit c fileName funcName = void $ submitJob c (packBS funcName) (packBS fileName) 0

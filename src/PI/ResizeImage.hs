@@ -67,11 +67,12 @@ resizeImage (ResizeConfig {..}) c gw job = do
       Right img -> do
         let out = encode OutputJPG [] $ resize Nearest Edge (height (dims img), imageWidth) img
         putFileAndNext gw job outFileName out $ do
-          submitJob c "upload" outFileName 0
-          submitJob c "remove" outFileName imageDelay
+          submitJob c "upload" outFileName' 0
+          submitJob c "remove" outFileName' imageDelay
           workDone job
 
-  where outFileName = imageOutput </> takeBaseName (name job) ++ imageSuffix
+  where outFileName = imageOutput </> takeBaseName (unpackBS $ name job) ++ imageSuffix
+        outFileName' = packBS outFileName
 
         height :: (Int, Int) -> Int
         height (h, w) = imageWidth * h `div` w
