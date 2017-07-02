@@ -67,7 +67,7 @@ resizeImage (ResizeConfig {..}) c gw job = do
       Right img -> do
         let out = encode OutputJPG [] $ resize Nearest Edge (height (dims img), imageWidth) img
         putFileAndNext gw job outFileName out $ do
-          submitJob c "upload" outFileName' 0
+          submitJob c "upload-next-guetzli" outFileName' 0
           submitJob c "remove" outFileName' imageDelay
           workDone job
 
