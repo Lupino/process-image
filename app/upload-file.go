@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 )
 
 var (
@@ -43,7 +44,18 @@ func main() {
 	worker.Connect(periodicHost)
 	worker.AddFunc("upload", uploadHandle)
 	worker.AddFunc("upload-next-guetzli", uploadNextGuetzliHandle)
+
+	go checkAlive()
+
 	worker.Work()
+}
+
+func checkAlive() {
+	c := time.Tick(1 * time.Minute)
+	for now := range c {
+		client.Ping()
+		worker.Ping()
+	}
 }
 
 func doUpload(fileName string) error {
