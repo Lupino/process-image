@@ -8,9 +8,10 @@ import           PI                 (Config (..), initialGateway, initialWorker)
 import           Data.Yaml          (decodeFile)
 import           System.Environment (getArgs)
 
-import           Periodic.Client    (Client, newClient)
+import           Periodic.Client    (newClient)
 import qualified Periodic.Client    as Client (close)
 import           Periodic.Socket    (connectTo)
+import           Periodic.Transport (makeSocketTransport)
 import           Periodic.Worker    (newWorker, work)
 
 defaultConfigFile :: FilePath
@@ -32,8 +33,8 @@ main = do
 program :: Config -> IO ()
 program config@(Config { periodicHost = host, periodicPort = port, threadNum = thread }) = do
   gw <- initialGateway config
-  c <- newClient =<< connectTo host (show port)
-  w <- newWorker =<< connectTo host (show port)
+  c <- newClient =<< makeSocketTransport =<< connectTo host (show port)
+  w <- newWorker =<< makeSocketTransport =<< connectTo host (show port)
   initialWorker w c gw config
   work w thread
   Client.close c

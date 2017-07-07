@@ -7,6 +7,7 @@ module Main
 import           Periodic.Client     (Client, newClient, submitJob)
 import qualified Periodic.Client     as Client (close)
 import           Periodic.Socket     (connectTo)
+import           Periodic.Transport  (makeSocketTransport)
 
 import           Control.Monad       (void)
 import           Data.String.Utils   (split)
@@ -51,7 +52,7 @@ program (Options { periodicPort = port
                  , funcNameList = funcs
                  }) = do
 
-  c <- newClient =<< connectTo host (show port)
+  c <- newClient =<< makeSocketTransport =<< connectTo host (show port)
   name <- getLine
   mapM (doSubmit c name) $ split "," funcs
   submitJob c "remove" (packBS name) 43200
