@@ -57,6 +57,8 @@ executable submit-image
                      , periodic-client
                      , periodic-common
                      , optparse-applicative
+                     , text
+                     , bytestring
                      , MissingH
   default-language:    Haskell2010
 

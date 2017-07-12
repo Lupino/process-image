@@ -11,10 +11,13 @@ import           Periodic.Transport  (makeSocketTransport)
 
 import           Control.Monad       (void)
 import           Data.String.Utils   (split)
-import           PI.Utils            (packBS)
 
 import           Data.Semigroup      ((<>))
 import           Options.Applicative
+
+import           Data.ByteString     (ByteString)
+import           Data.Text           as T (pack)
+import           Data.Text.Encoding  (encodeUtf8)
 
 data Options = Options { periodicHost :: String
                        , periodicPort :: Int
@@ -61,3 +64,7 @@ program (Options { periodicPort = port
 
 doSubmit :: Client -> FilePath -> String -> IO ()
 doSubmit c fileName funcName = void $ submitJob c (packBS funcName) (packBS fileName) 0
+
+packBS :: String -> ByteString
+packBS = encodeUtf8 . T.pack
+
