@@ -52,7 +52,7 @@ program (Options { periodicPort = port
                  , funcNameList = funcs
                  }) = do
 
-  c <- newClient =<< makeSocketTransport =<< connectTo host (show port)
+  c <- newClient =<< makeSocketTransport =<< connectTo (Just host) (show port)
   name <- getLine
   mapM (doSubmit c name) $ split "," funcs
   submitJob c "remove" (packBS name) 43200
