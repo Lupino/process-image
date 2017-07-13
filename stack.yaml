@@ -44,6 +44,7 @@ packages:
   subdirs:
   - periodic-client
   - periodic-common
+  - periodic-server
 - location:
     git: https://github.com/Lupino/sharefs.git
     commit: 849d7af9e27eb9fde4ace790da9f7bb48adf7c45

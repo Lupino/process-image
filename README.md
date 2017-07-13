@@ -13,6 +13,7 @@ Recommand build `process-image` with [`stack`](https://docs.haskellstack.org/en/
     stack build
     stack install
     stack install share-fs-server
+    stack install periodicd
 
 Build `upload-file.go`
 
@@ -22,12 +23,11 @@ Build `upload-file.go`
     go build upload-file.go
     mv upload-file ../bin
     cd ..
-    go get github.com/Lupino/periodic/cmd/periodic
 
 # Quick start
 
     ./bin/share-fs-server -H 127.0.0.1 -p 8080 --path share-fs
-    ./bin/periodic -d -H tcp://127.0.0.1:5000
+    ./bin/periodicd -H tcp://127.0.0.1:5000
     ./bin/process-image config.yml
     ./bin/upload-file -periodic tcp://127.0.0.1:5000 -thread 10 -share-fs-host http://127.0.0.1:8080 -bucket youbucket -accessKey youkey -accessID youid
 
