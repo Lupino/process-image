@@ -12,8 +12,7 @@ import           Data.Int        (Int64)
 import           PI.GuetzliImage (GuetzliConfig, defaultGuetzliConfig)
 import           PI.ResizeImage  (ResizeConfig)
 
-data Config = Config { periodicHost  :: Maybe String
-                     , periodicPort  :: Int
+data Config = Config { periodicHost  :: String
                      , threadNum     :: Int
                      , shareFSHost   :: String
                      , shareFSKey    :: String
@@ -27,8 +26,7 @@ data Config = Config { periodicHost  :: Maybe String
 
 instance FromJSON Config where
   parseJSON = withObject "Config" $ \o -> do
-    periodicHost  <- o .:? "periodic-host"   .!= Nothing
-    periodicPort  <- o .:? "periodic-port"   .!= 5000
+    periodicHost  <- o .:? "periodic"        .!= "unix:///tmp/periodic.sock"
     threadNum     <- o .:? "thread"          .!= 2
     shareFSHost   <- o .:? "share-fs-host"   .!= "http://gw.huabot.com"
     shareFSKey    <- o .:? "share-fs-key"    .!= ""

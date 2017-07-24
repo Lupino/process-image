@@ -8,11 +8,8 @@ import           PI                 (Config (..), initialGateway, initialWorker)
 import           Data.Yaml          (decodeFile)
 import           System.Environment (getArgs)
 
-import           Periodic.Client    (newClient)
-import qualified Periodic.Client    as Client (close)
-import           Periodic.Socket    (connectTo)
-import           Periodic.Transport (makeSocketTransport)
-import           Periodic.Worker    (newWorker, work)
+import           Periodic.Client    (close, open, runClient_)
+import           Periodic.Worker    (runWorker, work)
 
 defaultConfigFile :: FilePath
 defaultConfigFile = "config.yml"
@@ -31,10 +28,11 @@ main = do
     Just config -> program config
 
 program :: Config -> IO ()
-program config@(Config { periodicHost = host, periodicPort = port, threadNum = thread }) = do
+program config@(Config { periodicHost = host, threadNum = thread }) = do
   gw <- initialGateway config
-  c <- newClient =<< makeSocketTransport =<< connectTo host (show port)
-  w <- newWorker =<< makeSocketTransport =<< connectTo host (show port)
-  initialWorker w c gw config
-  work w thread
-  Client.close c
+  c <- open return host
+  runWorker return host $ do
+    initialWorker c gw config
+    work thread
+
+  runClient_ c close

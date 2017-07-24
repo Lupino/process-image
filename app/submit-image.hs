@@ -4,10 +4,7 @@ module Main
   ( main
   ) where
 
-import           Periodic.Client     (Client, newClient, submitJob)
-import qualified Periodic.Client     as Client (close)
-import           Periodic.Socket     (connectTo)
-import           Periodic.Transport  (makeSocketTransport)
+import           Periodic.Client     (Client, close, runClient, submitJob)
 
 import           Control.Monad       (void)
 import           Data.String.Utils   (split)
@@ -20,7 +17,6 @@ import           Data.Text           as T (pack)
 import           Data.Text.Encoding  (encodeUtf8)
 
 data Options = Options { periodicHost :: String
-                       , periodicPort :: Int
                        , funcNameList :: String
                        }
 
@@ -29,12 +25,7 @@ parser = Options <$> strOption (long "host"
                                 <> short 'H'
                                 <> metavar "HOST"
                                 <> help "Periodic Host"
-                                <> value "127.0.0.1")
-                 <*> option auto (long "port"
-                                <> short 'P'
-                                <> metavar "PORT"
-                                <> help "Periodic Port"
-                                <> value 5000)
+                                <> value "unix:///tmp/periodic.sock")
                  <*> strOption (long "func"
                                 <> short 'f'
                                 <> metavar "FUNC"
@@ -50,21 +41,20 @@ main = execParser opts >>= program
      <> header "submit-image - Submit Image" )
 
 program :: Options -> IO ()
-program (Options { periodicPort = port
-                 , periodicHost = host
+program (Options { periodicHost = host
                  , funcNameList = funcs
                  }) = do
 
-  c <- newClient =<< makeSocketTransport =<< connectTo (Just host) (show port)
   name <- getLine
-  mapM (doSubmit c name) $ split "," funcs
-  submitJob c "remove" (packBS name) 43200
-  Client.close c
+  runClient return host $ do
+    mapM (doSubmit name) $ split "," funcs
+    submitJob "remove" (packBS name) 43200
+    close
+
   putStrLn "OK"
 
-doSubmit :: Client -> FilePath -> String -> IO ()
-doSubmit c fileName funcName = void $ submitJob c (packBS funcName) (packBS fileName) 0
+doSubmit :: FilePath -> String -> Client ()
+doSubmit fileName funcName = void $ submitJob (packBS funcName) (packBS fileName) 0
 
 packBS :: String -> ByteString
 packBS = encodeUtf8 . T.pack
-

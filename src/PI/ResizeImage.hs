@@ -15,7 +15,8 @@ import qualified Data.ByteString.Lazy      as LB (toStrict)
 import           Data.Int                  (Int64)
 import           PI.Utils
 
-import           Periodic.Client           (Client, submitJob)
+import           Control.Monad.IO.Class    (liftIO)
+import           Periodic.Client           (Connection, runClient_, submitJob)
 import           Periodic.Job              (Job, name, workDone)
 
 import           Graphics.Image            (Border (Edge), Nearest (Nearest),
@@ -58,21 +59,22 @@ readImage bs = M.foldM reader (Left "") formats
         reader img         _     = return img
 
 
-resizeImage :: ResizeConfig -> Client -> Gateway -> Job -> IO ()
-resizeImage (ResizeConfig {..}) c gw job = do
-  getFileAndNext gw job $ \bs -> do
-    decoded <- readImage $ LB.toStrict bs
+resizeImage :: ResizeConfig -> Connection -> Gateway -> Job ()
+resizeImage (ResizeConfig {..}) c gw = do
+  getFileAndNext gw $ \bs -> do
+    decoded <- liftIO $ readImage $ LB.toStrict bs
     case decoded of
-      Left err    -> errorM "ResizeImage" err >> workDone job
+      Left err  -> liftIO (errorM "ResizeImage" err) >> workDone
       Right img -> do
+        n <- unpackBS <$> name
         let out = encode OutputJPG [] $ resize Nearest Edge (height (dims img), imageWidth) img
-        putFileAndNext gw job outFileName out $ do
-          submitJob c "upload-next-guetzli" outFileName' 0
-          submitJob c "remove" outFileName' imageDelay
-          workDone job
+            outFileName = imageOutput </> takeBaseName n ++ imageSuffix
+            outFileName' = packBS outFileName
+        putFileAndNext gw outFileName out $ do
+          liftIO $ runClient_ c $ do
+            submitJob "upload-next-guetzli" outFileName' 0
+            submitJob "remove" outFileName' imageDelay
+          workDone
 
-  where outFileName = imageOutput </> takeBaseName (unpackBS $ name job) ++ imageSuffix
-        outFileName' = packBS outFileName
-
-        height :: (Int, Int) -> Int
+  where height :: (Int, Int) -> Int
         height (h, w) = imageWidth * h `div` w
