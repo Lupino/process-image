@@ -47,15 +47,15 @@ packages:
   - periodic-server
 - location:
     git: https://github.com/Lupino/sharefs.git
-    commit: 849d7af9e27eb9fde4ace790da9f7bb48adf7c45
+    commit: b96ea8a4145f1700e360fb363d6a1f1c0292fad6
   extra-dep: true
   subdirs:
   - share-fs-client
   - share-fs-common
   - share-fs-server
 - location:
-    git: https://github.com/Lupino/dispatch-common.git
-    commit: 5eaddce781730a58d1ca7cc15479cc964a336df9
+    git: https://github.com/Lupino/yuntan-common.git
+    commit: be09d369c47141a3c3b21445c3d343ba93876e5c
   extra-dep: true
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
