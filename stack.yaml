@@ -55,7 +55,7 @@ packages:
   - share-fs-server
 - location:
     git: https://github.com/Lupino/yuntan-common.git
-    commit: be09d369c47141a3c3b21445c3d343ba93876e5c
+    commit: db2857511c6296ad4d19ecc11e66154c39e29660
   extra-dep: true
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
@@ -63,7 +63,7 @@ extra-deps: []
 
 # Override default flag values for local packages and extra-deps
 flags:
-  dispatch-common:
+  yuntan-common:
     signature-utils: true
 
 # Extra package databases containing global packages
