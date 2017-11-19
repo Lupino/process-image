@@ -41,13 +41,13 @@ main = execParser opts >>= program
      <> header "submit-image - Submit Image" )
 
 program :: Options -> IO ()
-program (Options { periodicHost = host
-                 , funcNameList = funcs
-                 }) = do
+program Options{periodicHost = host
+               , funcNameList = funcs
+               } = do
 
   name <- getLine
   runClient return host $ do
-    mapM (doSubmit name) $ split "," funcs
+    mapM_ (doSubmit name) $ split "," funcs
     submitJob "remove" (packBS name) 43200
     close
 

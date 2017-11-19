@@ -60,7 +60,7 @@ readImage bs = M.foldM reader (Left "") formats
 
 
 resizeImage :: ResizeConfig -> Connection -> Gateway -> Job ()
-resizeImage (ResizeConfig {..}) c gw = do
+resizeImage ResizeConfig{..} c gw =
   getFileAndNext gw $ \bs -> do
     decoded <- liftIO $ readImage $ LB.toStrict bs
     case decoded of

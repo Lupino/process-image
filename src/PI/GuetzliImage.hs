@@ -42,7 +42,7 @@ defaultGuetzliConfig = GuetzliConfig { guetzliCommand = "guetzli"
                                      }
 
 guetzliImage :: GuetzliConfig -> Connection -> Gateway -> Job ()
-guetzliImage (GuetzliConfig {..}) c gw = do
+guetzliImage GuetzliConfig{..} c gw =
   getFileAndNext gw $ \bs -> do
     (code, out, err) <- liftIO $ readProcessWithExitCode guetzliCommand ["-", "/dev/stdout"] bs
     case code of

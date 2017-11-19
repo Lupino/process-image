@@ -23,7 +23,7 @@ import           Control.Monad          (when)
 import           Data.ByteString.Char8  (pack)
 
 initialGateway :: Config -> IO Gateway
-initialGateway Config {..} = initMgr $ Gateway
+initialGateway Config{..} = initMgr Gateway
   { getGWUri       = shareFSHost
   , getGWAppKey    = shareFSKey
   , getGWAppSecret = shareFSSecret
@@ -33,7 +33,7 @@ initialGateway Config {..} = initMgr $ Gateway
   }
 
 initialWorker :: Connection -> Gateway -> Config -> Worker ()
-initialWorker c gw (Config {..}) = do
+initialWorker c gw Config{..} = do
   when enableRemove $ addFunc "remove" $ removeFile gw
   when enableGuetzli $ addFunc "guetzli" $ guetzliImage guetzliConfig c gw
   mapM_ initialResizeImage resizesConfig

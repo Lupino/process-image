@@ -28,7 +28,7 @@ main = do
     Just config -> program config
 
 program :: Config -> IO ()
-program config@(Config { periodicHost = host, threadNum = thread }) = do
+program config@Config{periodicHost = host, threadNum = thread} = do
   gw <- initialGateway config
   c <- open return host
   runWorker return host $ do
