@@ -5,6 +5,7 @@ module Main
   ) where
 
 import           Periodic.Client     (Client, close, runClient, submitJob)
+import           Periodic.Types      (FuncName (..), JobName (..))
 
 import           Control.Monad       (void)
 import           Data.String.Utils   (split)
@@ -48,13 +49,13 @@ program Options{periodicHost = host
   name <- getLine
   runClient return host $ do
     mapM_ (doSubmit name) $ split "," funcs
-    submitJob "remove" (packBS name) 43200
+    submitJob "remove" (JobName $ packBS name) 43200
     close
 
   putStrLn "OK"
 
 doSubmit :: FilePath -> String -> Client ()
-doSubmit fileName funcName = void $ submitJob (packBS funcName) (packBS fileName) 0
+doSubmit fileName funcName = void $ submitJob (FuncName $ packBS funcName) (JobName $ packBS fileName) 0
 
 packBS :: String -> ByteString
 packBS = encodeUtf8 . T.pack

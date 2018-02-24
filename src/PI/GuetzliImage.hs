@@ -8,13 +8,14 @@ module PI.GuetzliImage
   , defaultGuetzliConfig
   ) where
 
-import           Control.Monad.IO.Class         (liftIO)
 import           Data.Aeson                     (FromJSON, parseJSON,
                                                  withObject, (.!=), (.:?))
 import           Data.Int                       (Int64)
 import           Periodic.Client                (Connection, runClient_,
                                                  submitJob)
 import           Periodic.Job                   (Job, name, workDone)
+import           Periodic.Monad                 (unsafeLiftIO)
+import           Periodic.Types                 (JobName (..))
 import           PI.Utils
 import           ShareFS.Client                 (Gateway)
 import           System.Exit                    (ExitCode (..))
@@ -44,15 +45,15 @@ defaultGuetzliConfig = GuetzliConfig { guetzliCommand = "guetzli"
 guetzliImage :: GuetzliConfig -> Connection -> Gateway -> Job ()
 guetzliImage GuetzliConfig{..} c gw =
   getFileAndNext gw $ \bs -> do
-    (code, out, err) <- liftIO $ readProcessWithExitCode guetzliCommand ["-", "/dev/stdout"] bs
+    (code, out, err) <- unsafeLiftIO $ readProcessWithExitCode guetzliCommand ["-", "/dev/stdout"] bs
     case code of
       ExitFailure _ -> doJobLater "guetzli failed"
       ExitSuccess   -> do
-        n <- unpackBS <$> name
+        n <- name
         let outFileName = guetzliOutput </> takeFileName n
-            outFileName' = packBS outFileName
+            outFileName' = JobName $ packBS outFileName
         putFileAndNext gw outFileName out $ do
-          liftIO $ runClient_ c $ do
+          unsafeLiftIO $ runClient_ c $ do
             submitJob "upload" outFileName' 0
             submitJob "remove" outFileName' guetzliDelay
           workDone

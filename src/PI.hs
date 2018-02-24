@@ -8,19 +8,19 @@ module PI
   , initialWorker
   ) where
 
-import           PI.Config              as X
-import           PI.GuetzliImage        as X
-import           PI.RemoveFile          as X
-import           PI.ResizeImage         as X
+import           PI.Config             as X
+import           PI.GuetzliImage       as X
+import           PI.RemoveFile         as X
+import           PI.ResizeImage        as X
 
-import           ShareFS.Client         (Gateway (..), initMgr)
+import           ShareFS.Client        (Gateway (..), initMgr)
 
-import           Control.Monad.IO.Class (liftIO)
-import           Periodic.Client        (Connection)
-import           Periodic.Worker        (Worker, addFunc)
+import           Periodic.Client       (Connection)
+import           Periodic.Types        (FuncName (..))
+import           Periodic.Worker       (Worker, addFunc)
 
-import           Control.Monad          (when)
-import           Data.ByteString.Char8  (pack)
+import           Control.Monad         (when)
+import           Data.ByteString.Char8 (pack)
 
 initialGateway :: Config -> IO Gateway
 initialGateway Config{..} = initMgr Gateway
@@ -39,5 +39,5 @@ initialWorker c gw Config{..} = do
   mapM_ initialResizeImage resizesConfig
 
   where initialResizeImage :: ResizeConfig -> Worker ()
-        initialResizeImage conf = addFunc (funcName conf) $ resizeImage conf c gw
+        initialResizeImage conf = addFunc (FuncName $ funcName conf) $ resizeImage conf c gw
         funcName = pack . imageFuncName

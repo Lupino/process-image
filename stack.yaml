@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-8.23
+resolver: lts-10.5
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -39,7 +39,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/Lupino/haskell-periodic.git
-    commit: f8ca1edde1dbf908dfa792e085987f6347f2a8a2
+    commit: bdd25217d82a830da57f731043a9e21c14600d28
   extra-dep: true
   subdirs:
   - periodic-client
@@ -47,7 +47,7 @@ packages:
   - periodic-server
 - location:
     git: https://github.com/Lupino/sharefs.git
-    commit: b96ea8a4145f1700e360fb363d6a1f1c0292fad6
+    commit: 14e272b98ca6b2d07ee9403d9f8df2808170b198
   extra-dep: true
   subdirs:
   - share-fs-client
@@ -55,16 +55,16 @@ packages:
   - share-fs-server
 - location:
     git: https://github.com/Lupino/yuntan-common.git
-    commit: db2857511c6296ad4d19ecc11e66154c39e29660
+    commit: 35dc17e4c419c54b9f067352facf9778cf45895f
   extra-dep: true
+  subdirs:
+  - yuntan-common-signature
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps: []
 
 # Override default flag values for local packages and extra-deps
-flags:
-  yuntan-common:
-    signature-utils: true
+flags: {}
 
 # Extra package databases containing global packages
 extra-package-dbs: []

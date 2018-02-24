@@ -15,9 +15,10 @@ import qualified Data.ByteString.Lazy      as LB (toStrict)
 import           Data.Int                  (Int64)
 import           PI.Utils
 
-import           Control.Monad.IO.Class    (liftIO)
 import           Periodic.Client           (Connection, runClient_, submitJob)
 import           Periodic.Job              (Job, name, workDone)
+import           Periodic.Monad            (unsafeLiftIO)
+import           Periodic.Types            (JobName (..))
 
 import           Graphics.Image            (Border (Edge), Nearest (Nearest),
                                             dims)
@@ -62,16 +63,16 @@ readImage bs = M.foldM reader (Left "") formats
 resizeImage :: ResizeConfig -> Connection -> Gateway -> Job ()
 resizeImage ResizeConfig{..} c gw =
   getFileAndNext gw $ \bs -> do
-    decoded <- liftIO $ readImage $ LB.toStrict bs
+    decoded <- unsafeLiftIO $ readImage $ LB.toStrict bs
     case decoded of
-      Left err  -> liftIO (errorM "ResizeImage" err) >> workDone
+      Left err  -> unsafeLiftIO (errorM "ResizeImage" err) >> workDone
       Right img -> do
-        n <- unpackBS <$> name
+        n <- name
         let out = encode OutputJPG [] $ resize Nearest Edge (height (dims img), imageWidth) img
             outFileName = imageOutput </> takeBaseName n ++ imageSuffix
-            outFileName' = packBS outFileName
+            outFileName' = JobName $ packBS outFileName
         putFileAndNext gw outFileName out $ do
-          liftIO $ runClient_ c $ do
+          unsafeLiftIO $ runClient_ c $ do
             submitJob "upload-next-guetzli" outFileName' 0
             submitJob "remove" outFileName' imageDelay
           workDone
