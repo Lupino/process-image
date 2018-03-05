@@ -15,9 +15,9 @@ import           PI.ResizeImage        as X
 
 import           ShareFS.Client        (Gateway (..), initMgr)
 
-import           Periodic.Client       (Connection)
+import           Periodic.Client       (ClientEnv)
 import           Periodic.Types        (FuncName (..))
-import           Periodic.Worker       (Worker, addFunc)
+import           Periodic.Worker       (WorkerT, addFunc)
 
 import           Control.Monad         (when)
 import           Data.ByteString.Char8 (pack)
@@ -32,12 +32,12 @@ initialGateway Config{..} = initMgr Gateway
   , getGWMgr       = Nothing
   }
 
-initialWorker :: Connection -> Gateway -> Config -> Worker ()
-initialWorker c gw Config{..} = do
+initialWorker :: ClientEnv IO -> Gateway -> Config -> WorkerT IO ()
+initialWorker env0 gw Config{..} = do
   when enableRemove $ addFunc "remove" $ removeFile gw
-  when enableGuetzli $ addFunc "guetzli" $ guetzliImage guetzliConfig c gw
+  when enableGuetzli $ addFunc "guetzli" $ guetzliImage guetzliConfig env0 gw
   mapM_ initialResizeImage resizesConfig
 
-  where initialResizeImage :: ResizeConfig -> Worker ()
-        initialResizeImage conf = addFunc (FuncName $ funcName conf) $ resizeImage conf c gw
+  where initialResizeImage :: ResizeConfig -> WorkerT IO ()
+        initialResizeImage conf = addFunc (FuncName $ funcName conf) $ resizeImage conf env0 gw
         funcName = pack . imageFuncName

@@ -3,16 +3,16 @@ module PI.RemoveFile
     removeFile
   ) where
 
-import           Periodic.Job   (Job, name, workDone)
-import           Periodic.Monad (unsafeLiftIO)
-import           PI.Utils       (doJobLater)
+import           Control.Monad.IO.Class (liftIO)
+import           Periodic.Job           (JobT, name, workDone)
+import           PI.Utils               (doJobLater)
 
-import           ShareFS.Client (Gateway, deleteFile)
+import           ShareFS.Client         (Gateway, deleteFile)
 
-removeFile :: Gateway -> Job ()
+removeFile :: Gateway -> JobT IO ()
 removeFile gw = do
   n <- name
-  ret <- unsafeLiftIO $ deleteFile n gw
+  ret <- liftIO $ deleteFile n gw
   case ret of
     Left err -> doJobLater err
     Right _  -> workDone

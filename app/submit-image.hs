@@ -4,7 +4,8 @@ module Main
   ( main
   ) where
 
-import           Periodic.Client     (Client, close, runClient, submitJob)
+import           Periodic.Client     (ClientT, close, open, runClientT,
+                                      submitJob)
 import           Periodic.Types      (FuncName (..), JobName (..))
 
 import           Control.Monad       (void)
@@ -47,14 +48,15 @@ program Options{periodicHost = host
                } = do
 
   name <- getLine
-  runClient return host $ do
+  clientEnv <- open return host
+  runClientT clientEnv $ do
     mapM_ (doSubmit name) $ split "," funcs
-    submitJob "remove" (JobName $ packBS name) 43200
+    void $ submitJob "remove" (JobName $ packBS name) 43200
     close
 
   putStrLn "OK"
 
-doSubmit :: FilePath -> String -> Client ()
+doSubmit :: FilePath -> String -> ClientT IO ()
 doSubmit fileName funcName = void $ submitJob (FuncName $ packBS funcName) (JobName $ packBS fileName) 0
 
 packBS :: String -> ByteString

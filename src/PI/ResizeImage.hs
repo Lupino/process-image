@@ -10,14 +10,15 @@ module PI.ResizeImage
 import           Data.Aeson                (FromJSON, parseJSON, withObject,
                                             (.!=), (.:), (.:?))
 
+import           Control.Monad.IO.Class    (liftIO)
 import           Data.ByteString.Char8     (ByteString)
 import qualified Data.ByteString.Lazy      as LB (toStrict)
 import           Data.Int                  (Int64)
 import           PI.Utils
 
-import           Periodic.Client           (Connection, runClient_, submitJob)
-import           Periodic.Job              (Job, name, workDone)
-import           Periodic.Monad            (unsafeLiftIO)
+import           Periodic.Client           (ClientEnv, ClientT, runClientT,
+                                            submitJob)
+import           Periodic.Job              (JobT, name, workDone)
 import           Periodic.Types            (JobName (..))
 
 import           Graphics.Image            (Border (Edge), Nearest (Nearest),
@@ -60,19 +61,19 @@ readImage bs = M.foldM reader (Left "") formats
         reader img         _     = return img
 
 
-resizeImage :: ResizeConfig -> Connection -> Gateway -> Job ()
-resizeImage ResizeConfig{..} c gw =
+resizeImage :: ResizeConfig -> ClientEnv IO -> Gateway -> JobT IO ()
+resizeImage ResizeConfig{..} env0 gw =
   getFileAndNext gw $ \bs -> do
-    decoded <- unsafeLiftIO $ readImage $ LB.toStrict bs
+    decoded <- liftIO $ readImage $ LB.toStrict bs
     case decoded of
-      Left err  -> unsafeLiftIO (errorM "ResizeImage" err) >> workDone
+      Left err  -> liftIO (errorM "ResizeImage" err) >> workDone
       Right img -> do
         n <- name
         let out = encode OutputJPG [] $ resize Nearest Edge (height (dims img), imageWidth) img
             outFileName = imageOutput </> takeBaseName n ++ imageSuffix
             outFileName' = JobName $ packBS outFileName
         putFileAndNext gw outFileName out $ do
-          unsafeLiftIO $ runClient_ c $ do
+          liftIO $ runClientT env0 $ do
             submitJob "upload-next-guetzli" outFileName' 0
             submitJob "remove" outFileName' imageDelay
           workDone

@@ -8,8 +8,8 @@ import           PI                 (Config (..), initialGateway, initialWorker)
 import           Data.Yaml          (decodeFile)
 import           System.Environment (getArgs)
 
-import           Periodic.Client    (close, open, runClient_)
-import           Periodic.Worker    (runWorker, work)
+import           Periodic.Client    (close, open, runClientT)
+import           Periodic.Worker    (runWorkerT, work)
 
 defaultConfigFile :: FilePath
 defaultConfigFile = "config.yml"
@@ -30,9 +30,9 @@ main = do
 program :: Config -> IO ()
 program config@Config{periodicHost = host, threadNum = thread} = do
   gw <- initialGateway config
-  c <- open return host
-  runWorker return host $ do
-    initialWorker c gw config
+  clientEnv <- open return host
+  runWorkerT return host $ do
+    initialWorker clientEnv gw config
     work thread
 
-  runClient_ c close
+  runClientT clientEnv close
