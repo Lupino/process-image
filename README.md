@@ -9,6 +9,7 @@ Recommand build `process-image` with [`stack`](https://docs.haskellstack.org/en/
     git clone https://github.com/Lupino/process-image.git
     cd process-image
     mkdir bin
+    echo 'local-bin-path: bin' >> stack.yaml
     stack build
     stack install
 
