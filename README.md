@@ -28,6 +28,14 @@ Install `periodicd`
     tar xvf ../periodic-linux-v1.1.4.0.tar.bz2
     cd ..
 
+Build `guetzli`
+
+    git clone https://github.com/google/guetzli.git
+    cd guetzli
+    make
+    cp bin/Release/guetzli ../bin
+    cd ..
+
 # Quick start
 
     ./bin/periodicd
