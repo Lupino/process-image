@@ -1,18 +1,16 @@
 module PI.RemoveFile
-  (
-    removeFile
+  ( removeFile
   ) where
 
+import           Control.Monad          (when)
 import           Control.Monad.IO.Class (liftIO)
 import           Periodic.Job           (JobT, name, workDone)
-import           PI.Utils               (doJobLater)
+import qualified System.Directory       as D (doesFileExist, removeFile)
+import           System.FilePath        ((</>))
 
-import           ShareFS.Client         (Gateway, deleteFile)
-
-removeFile :: Gateway -> JobT IO ()
-removeFile gw = do
+removeFile :: FilePath -> JobT IO ()
+removeFile root = do
   n <- name
-  ret <- liftIO $ deleteFile n gw
-  case ret of
-    Left err -> doJobLater err
-    Right _  -> workDone
+  exists <- liftIO $ D.doesFileExist $ root </> n
+  when exists $ liftIO $ D.removeFile $ root </> n
+  workDone

@@ -1,37 +1,32 @@
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 
 module PI.ResizeImage
-  (
-    resizeImage
+  ( resizeImage
   , ResizeConfig (..)
   ) where
 
-import           Data.Aeson                (FromJSON, parseJSON, withObject,
-                                            (.!=), (.:), (.:?))
-
-import           Control.Monad.IO.Class    (liftIO)
-import           Data.ByteString.Char8     (ByteString)
-import qualified Data.ByteString.Lazy      as LB (toStrict)
-import           Data.Int                  (Int64)
+import           Codec.Picture          (DynamicImage (..), Image,
+                                         dynamicPixelMap, readImage,
+                                         saveJpgImage)
+import qualified Codec.Picture          as P (Image (..))
+import           Codec.Picture.Extra    (scaleBilinear)
+import           Control.Monad          (void)
+import qualified Control.Monad          as M (foldM)
+import           Control.Monad.IO.Class (liftIO)
+import           Data.Aeson             (FromJSON, parseJSON, withObject, (.!=),
+                                         (.:), (.:?))
+import           Data.ByteString.Char8  (ByteString)
+import qualified Data.ByteString.Lazy   as LB (toStrict)
+import           Data.Int               (Int64)
+import           Periodic.Client        (ClientEnv, ClientT, runClientT,
+                                         submitJob)
+import           Periodic.Job           (JobT, name, workDone)
+import           Periodic.Types         (JobName (..))
 import           PI.Utils
-
-import           Periodic.Client           (ClientEnv, ClientT, runClientT,
-                                            submitJob)
-import           Periodic.Job              (JobT, name, workDone)
-import           Periodic.Types            (JobName (..))
-
-import           Graphics.Image            (Border (Edge), Nearest (Nearest),
-                                            dims)
-
-import qualified Control.Monad             as M (foldM)
-import           Graphics.Image.Types
-
-import           Graphics.Image.Processing (resize)
-import           ShareFS.Client            (Gateway)
-
-import           System.FilePath           (takeBaseName, (</>))
-import           System.Log.Logger         (errorM)
+import           System.FilePath        (takeBaseName, (</>))
+import           System.Log.Logger      (errorM)
 
 data ResizeConfig = ResizeConfig { imageWidth    :: Int
                                  , imageOutput   :: FilePath
@@ -50,33 +45,32 @@ instance FromJSON ResizeConfig where
     imageDelay    <- o .:? "delay"  .!= 432000
     return ResizeConfig {..}
 
-readImage :: ByteString -> IO (Either String (Image VS RGB Double))
-readImage bs = M.foldM reader (Left "") formats
+resizeImage :: ResizeConfig -> ClientEnv -> FilePath -> JobT IO ()
+resizeImage ResizeConfig{..} env0 root = do
+  fn <- name
+  decoded <- liftIO $ readImage $ root </> fn
+  case decoded of
+    Left err  -> liftIO (errorM "PI.ResizeImage" err)
+    Right img -> do
+      case scale img of
+        Nothing -> liftIO (errorM "PI.ResizeImage" $ "Not support image " ++ fn)
+        Just out -> do
+          let outFileName = imageOutput ++ takeBaseName fn ++ imageSuffix
+              outFileName' = JobName $ packBS outFileName
 
-  where formats = [InputBMP, InputGIF, InputHDR, InputJPG, InputPNG, InputTIF, InputPNM, InputTGA]
-
-        reader :: Either String (Image VS RGB Double) -> InputFormat -> IO (Either String (Image VS RGB Double))
-        reader (Left err) format =
-          return $ either (Left . ((err++"\n")++)) Right (decode format bs)
-        reader img         _     = return img
-
-
-resizeImage :: ResizeConfig -> ClientEnv IO -> Gateway -> JobT IO ()
-resizeImage ResizeConfig{..} env0 gw =
-  getFileAndNext gw $ \bs -> do
-    decoded <- liftIO $ readImage $ LB.toStrict bs
-    case decoded of
-      Left err  -> liftIO (errorM "ResizeImage" err) >> workDone
-      Right img -> do
-        n <- name
-        let out = encode OutputJPG [] $ resize Nearest Edge (height (dims img), imageWidth) img
-            outFileName = imageOutput </> takeBaseName n ++ imageSuffix
-            outFileName' = JobName $ packBS outFileName
-        putFileAndNext gw outFileName out $ do
+          liftIO $ saveJpgImage 80 (root </> outFileName) out
           liftIO $ runClientT env0 $ do
-            submitJob "upload-next-guetzli" outFileName' 0
-            submitJob "remove" outFileName' imageDelay
-          workDone
+            void $ submitJob "upload-next-guetzli" outFileName' Nothing Nothing
+            void $ submitJob "remove" outFileName' Nothing $ Just imageDelay
 
-  where height :: (Int, Int) -> Int
-        height (h, w) = imageWidth * h `div` w
+  workDone
+
+  where height :: Image a -> Int
+        height img = imageWidth * (P.imageHeight img) `div` (P.imageWidth img)
+
+        scale :: DynamicImage -> Maybe DynamicImage
+        scale (ImageRGB8 img) = Just $ ImageRGB8 $ scaleBilinear imageWidth (height img) img
+        scale (ImageRGB16 img) = Just $ ImageRGB16 $ scaleBilinear imageWidth (height img) img
+        scale (ImageRGBA8 img) = Just $ ImageRGBA8 $ scaleBilinear imageWidth (height img) img
+        scale (ImageRGBA16 img) = Just $ ImageRGBA16 $ scaleBilinear imageWidth (height img) img
+        scale _ = Nothing

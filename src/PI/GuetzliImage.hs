@@ -2,8 +2,7 @@
 {-# LANGUAGE RecordWildCards   #-}
 
 module PI.GuetzliImage
-  (
-    GuetzliConfig (..)
+  ( GuetzliConfig (..)
   , guetzliImage
   , defaultGuetzliConfig
   ) where
@@ -18,7 +17,6 @@ import           Periodic.Client                (ClientEnv, runClientT,
 import           Periodic.Job                   (JobT, name, workDone)
 import           Periodic.Types                 (JobName (..))
 import           PI.Utils
-import           ShareFS.Client                 (Gateway)
 import           System.Exit                    (ExitCode (..))
 import           System.FilePath                (takeFileName, (</>))
 import           System.Process.ByteString.Lazy (readProcessWithExitCode)
@@ -43,18 +41,17 @@ defaultGuetzliConfig = GuetzliConfig { guetzliCommand = "guetzli"
                                      , guetzliDelay = 432000
                                      }
 
-guetzliImage :: GuetzliConfig -> ClientEnv IO -> Gateway -> JobT IO ()
-guetzliImage GuetzliConfig{..} env0 gw =
-  getFileAndNext gw $ \bs -> do
-    (code, out, _) <- liftIO $ readProcessWithExitCode guetzliCommand ["-", "/dev/stdout"] bs
-    case code of
-      ExitFailure _ -> doJobLater "guetzli failed"
-      ExitSuccess   -> do
-        n <- name
-        let outFileName = guetzliOutput </> takeFileName n
-            outFileName' = JobName $ packBS outFileName
-        putFileAndNext gw outFileName out $ do
-          liftIO $ runClientT env0 $ do
-            void $ submitJob "upload" outFileName' 0
-            void $ submitJob "remove" outFileName' guetzliDelay
-          workDone
+guetzliImage :: GuetzliConfig -> ClientEnv -> FilePath -> JobT IO ()
+guetzliImage GuetzliConfig{..} env0 root = do
+  fn <- name
+  let outFileName = guetzliOutput </> takeFileName fn
+      outFileName' = JobName $ packBS outFileName
+  (code, _, _) <- liftIO $ readProcessWithExitCode guetzliCommand [root </> fn, root </> outFileName] ""
+
+  case code of
+    ExitFailure _ -> doJobLater "guetzli failed"
+    ExitSuccess   -> do
+      liftIO $ runClientT env0 $ do
+        void $ submitJob "upload" outFileName' Nothing Nothing
+        void $ submitJob "remove" outFileName' Nothing $ Just guetzliDelay
+      workDone

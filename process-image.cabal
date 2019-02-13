@@ -22,7 +22,6 @@ library
                      , PI.RemoveFile
                      , PI.Config
   build-depends:       base >= 4.7 && < 5
-                     , share-fs-client
                      , periodic-client
                      , periodic-common
                      , bytestring
@@ -32,8 +31,10 @@ library
                      , filepath
                      , aeson
 
-                     , hip
+                     , JuicyPixels
+                     , JuicyPixels-extra
                      , text
+                     , directory
   default-language:    Haskell2010
 
 executable process-image
@@ -44,7 +45,6 @@ executable process-image
                      , process-image
                      , periodic-client
                      , periodic-common
-                     , share-fs-client
                      , yaml
   default-language:    Haskell2010
 

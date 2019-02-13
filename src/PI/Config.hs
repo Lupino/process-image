@@ -14,9 +14,7 @@ import           PI.ResizeImage  (ResizeConfig)
 
 data Config = Config { periodicHost  :: String
                      , threadNum     :: Int
-                     , shareFSHost   :: String
-                     , shareFSKey    :: String
-                     , shareFSSecret :: String
+                     , root          :: FilePath
                      , guetzliConfig :: GuetzliConfig
                      , resizesConfig :: [ResizeConfig]
                      , enableRemove  :: Bool
@@ -28,9 +26,7 @@ instance FromJSON Config where
   parseJSON = withObject "Config" $ \o -> do
     periodicHost  <- o .:? "periodic"        .!= "unix:///tmp/periodic.sock"
     threadNum     <- o .:? "thread"          .!= 2
-    shareFSHost   <- o .:? "share-fs-host"   .!= "http://gw.huabot.com"
-    shareFSKey    <- o .:? "share-fs-key"    .!= ""
-    shareFSSecret <- o .:? "share-fs-secret" .!= ""
+    root          <- o .:? "root"            .!= "images"
     guetzliConfig <- o .:? "guetzli"         .!= defaultGuetzliConfig
     resizesConfig <- o .:? "resizes"         .!= []
     enableRemove  <- o .:? "enable-remove"   .!= False

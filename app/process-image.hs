@@ -3,9 +3,9 @@ module Main
     main
   ) where
 
-import           PI                 (Config (..), initialGateway, initialWorker)
+import           PI                 (Config (..), initialWorker)
 
-import           Data.Yaml          (decodeFile)
+import           Data.Yaml          (decodeFileThrow)
 import           System.Environment (getArgs)
 
 import           Periodic.Client    (close, open, runClientT)
@@ -22,17 +22,14 @@ main = do
                      [x] -> x
                      _   -> defaultConfigFile
 
-  c <- decodeFile configFile :: IO (Maybe Config)
-  case c of
-    Nothing     -> putStrLn "Config file format error"
-    Just config -> program config
+  c <- decodeFileThrow configFile
+  program c
 
 program :: Config -> IO ()
 program config@Config{periodicHost = host, threadNum = thread} = do
-  gw <- initialGateway config
   clientEnv <- open return host
   runWorkerT return host $ do
-    initialWorker clientEnv gw config
+    initialWorker clientEnv config
     work thread
 
   runClientT clientEnv close

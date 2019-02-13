@@ -1,9 +1,6 @@
-periodic-host: 127.0.0.1
-periodic-port: 5000
+periodic: unix:///tmp/periodic.sock
 thread: 2
-share-fs-host: http://127.0.0.1:8080
-share-fs-key: ""
-share-fs-secret: ""
+root: images
 enable-guetzli: true
 enable-remove: true
 guetzli:

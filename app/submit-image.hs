@@ -51,13 +51,13 @@ program Options{periodicHost = host
   clientEnv <- open return host
   runClientT clientEnv $ do
     mapM_ (doSubmit name) $ split "," funcs
-    void $ submitJob "remove" (JobName $ packBS name) 43200
+    void $ submitJob "remove" (JobName $ packBS name) Nothing $ Just 43200
     close
 
   putStrLn "OK"
 
 doSubmit :: FilePath -> String -> ClientT IO ()
-doSubmit fileName funcName = void $ submitJob (FuncName $ packBS funcName) (JobName $ packBS fileName) 0
+doSubmit fileName funcName = void $ submitJob (FuncName $ packBS funcName) (JobName $ packBS fileName) Nothing Nothing
 
 packBS :: String -> ByteString
 packBS = encodeUtf8 . T.pack

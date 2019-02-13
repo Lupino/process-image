@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-10.5
+resolver: lts-13.6
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -37,31 +37,15 @@ resolver: lts-10.5
 # will not be run. This is useful for tweaking upstream packages.
 packages:
 - '.'
-- location:
-    git: https://github.com/Lupino/haskell-periodic.git
-    commit: bdd25217d82a830da57f731043a9e21c14600d28
-  extra-dep: true
+# Dependency packages to be pulled from upstream that are not in the resolver
+# (e.g., acme-missiles-0.3)
+extra-deps:
+- crc-0.1.0.0
+- git: https://github.com/Lupino/haskell-periodic.git
+  commit: c5c9516648487bc065cab402f1a5854107025097
   subdirs:
   - periodic-client
   - periodic-common
-  - periodic-server
-- location:
-    git: https://github.com/Lupino/sharefs.git
-    commit: 14e272b98ca6b2d07ee9403d9f8df2808170b198
-  extra-dep: true
-  subdirs:
-  - share-fs-client
-  - share-fs-common
-  - share-fs-server
-- location:
-    git: https://github.com/Lupino/yuntan-common.git
-    commit: 35dc17e4c419c54b9f067352facf9778cf45895f
-  extra-dep: true
-  subdirs:
-  - yuntan-common-signature
-# Dependency packages to be pulled from upstream that are not in the resolver
-# (e.g., acme-missiles-0.3)
-extra-deps: []
 
 # Override default flag values for local packages and extra-deps
 flags: {}
