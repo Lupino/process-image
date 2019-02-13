@@ -2,9 +2,8 @@
 {-# LANGUAGE RecordWildCards   #-}
 
 module PI.Config
-  (
-    Config (..)
-  )where
+  ( Config (..)
+  ) where
 
 import           Data.Aeson      (FromJSON, parseJSON, withObject, (.!=), (.:?))
 import           Data.Int        (Int64)
