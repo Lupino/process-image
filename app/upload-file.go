@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/Lupino/go-periodic"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"io/ioutil"
 	"log"
 	"path/filepath"
 	"time"
@@ -41,6 +42,8 @@ func main() {
 	worker.Connect(periodicHost)
 	worker.AddFunc("upload", uploadHandle)
 	worker.AddFunc("upload-next-guetzli", uploadNextGuetzliHandle)
+	worker.AddFunc("remove-remote", removeRemoteFileHandle)
+	worker.AddFunc("get-remote", getRemoteFileHandle)
 
 	go checkAlive()
 
@@ -89,6 +92,53 @@ func uploadNextGuetzliHandle(job periodic.Job) {
 	}
 	job.Done()
 	client.SubmitJob("guetzli", job.Name, nil)
+}
+
+func removeRemoteFileHandle(job periodic.Job) {
+	var baseName = filepath.Base(job.Name)
+
+	if err := bucket.DeleteObject(baseName); err != nil {
+		log.Printf("bucket.DeleteObject() failed (%s)", err)
+		if job.Raw.Counter > 20 {
+			job.Done()
+			return
+		}
+		job.SchedLater(int(job.Raw.Counter)*10, 1)
+		return
+	}
+
+	job.Done()
+}
+
+func doGetRemoteFile(fileName string) ([]byte, error) {
+	var baseName = filepath.Base(fileName)
+
+	body, err := bucket.GetObject(baseName)
+	if err != nil {
+		log.Printf("bucket.GetObject() failed (%s)", err)
+		return nil, err
+	}
+
+	data, err := ioutil.ReadAll(body)
+	if err != nil {
+		log.Printf("ioutil.ReadAll() failed (%s)", err)
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func getRemoteFileHandle(job periodic.Job) {
+	data, err := doGetRemoteFile(job.Name)
+	if err != nil {
+		if job.Raw.Counter > 20 {
+			job.Done()
+			return
+		}
+		job.SchedLater(int(job.Raw.Counter)*10, 1)
+		return
+	}
+	job.Done(data)
 }
 
 func initBucket() {
