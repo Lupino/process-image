@@ -25,7 +25,7 @@ initialWorker env0 Config{..} = do
   liftIO $ do
     createDirectoryIfMissing True root
     createDirectoryIfMissing True $ root </>  guetzliOutput guetzliConfig
-  when enableSave $ addFunc "save" $ saveFile root
+  when enableSave $ addFunc "save" $ saveFile (map imageFuncName resizesConfig) env0 root
   when enableRemove $ addFunc "remove" $ removeFile root
   when enableGuetzli $ addFunc "guetzli" $ guetzliImage guetzliConfig env0 root
   mapM_ initialResizeImage resizesConfig
