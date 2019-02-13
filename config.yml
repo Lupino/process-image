@@ -3,6 +3,7 @@ thread: 2
 root: images
 enable-guetzli: true
 enable-remove: true
+enable-save: true
 guetzli:
   command: guetzli
   output: guetzli

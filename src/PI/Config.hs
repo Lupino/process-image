@@ -18,6 +18,7 @@ data Config = Config { periodicHost  :: String
                      , guetzliConfig :: GuetzliConfig
                      , resizesConfig :: [ResizeConfig]
                      , enableRemove  :: Bool
+                     , enableSave    :: Bool
                      , enableGuetzli :: Bool
                      }
   deriving (Show)
@@ -30,5 +31,6 @@ instance FromJSON Config where
     guetzliConfig <- o .:? "guetzli"         .!= defaultGuetzliConfig
     resizesConfig <- o .:? "resizes"         .!= []
     enableRemove  <- o .:? "enable-remove"   .!= False
+    enableSave    <- o .:? "enable-save"     .!= False
     enableGuetzli <- o .:? "enable-guetzli"  .!= False
     return Config {..}

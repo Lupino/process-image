@@ -20,6 +20,7 @@ library
                      , PI.GuetzliImage
                      , PI.ResizeImage
                      , PI.RemoveFile
+                     , PI.SaveFile
                      , PI.Config
   build-depends:       base >= 4.7 && < 5
                      , periodic-client
