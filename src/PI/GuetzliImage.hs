@@ -7,19 +7,18 @@ module PI.GuetzliImage
   , defaultGuetzliConfig
   ) where
 
-import           Control.Monad                  (void)
-import           Control.Monad.IO.Class         (liftIO)
-import           Data.Aeson                     (FromJSON, parseJSON,
-                                                 withObject, (.!=), (.:?))
-import           Data.Int                       (Int64)
-import           Periodic.Client                (ClientEnv, runClientT,
-                                                 submitJob)
-import           Periodic.Job                   (JobT, name, workDone)
-import           Periodic.Types                 (JobName (..))
+import           Control.Monad          (void)
+import           Control.Monad.IO.Class (liftIO)
+import           Data.Aeson             (FromJSON, parseJSON, withObject, (.!=),
+                                         (.:?))
+import           Data.Int               (Int64)
+import           Periodic.Client        (ClientEnv, runClientT, submitJob)
+import           Periodic.Job           (JobT, name, workDone)
+import           Periodic.Types         (JobName (..))
 import           PI.Utils
-import           System.Exit                    (ExitCode (..))
-import           System.FilePath                (takeFileName, (</>))
-import           System.Process.ByteString.Lazy (readProcessWithExitCode)
+import           System.Exit            (ExitCode (..))
+import           System.FilePath        (takeFileName, (</>))
+import           System.Process         (rawSystem)
 
 
 data GuetzliConfig = GuetzliConfig { guetzliCommand :: FilePath
@@ -46,7 +45,7 @@ guetzliImage GuetzliConfig{..} env0 root = do
   fn <- name
   let outFileName = guetzliOutput </> takeFileName fn
       outFileName' = JobName $ packBS outFileName
-  (code, _, _) <- liftIO $ readProcessWithExitCode guetzliCommand [root </> fn, root </> outFileName] ""
+  code <- liftIO $ rawSystem guetzliCommand [root </> fn, root </> outFileName]
 
   case code of
     ExitFailure _ -> doJobLater "guetzli failed"

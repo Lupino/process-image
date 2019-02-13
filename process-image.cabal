@@ -28,7 +28,7 @@ library
                      , bytestring
                      , hslogger
 
-                     , process-extras
+                     , process
                      , filepath
                      , aeson
 
