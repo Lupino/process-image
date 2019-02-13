@@ -5,7 +5,6 @@ import (
 	"github.com/Lupino/go-periodic"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"log"
-	"net/http"
 	"path/filepath"
 	"time"
 )
@@ -20,8 +19,7 @@ var (
 	endpoint     string
 	accessID     string
 	accessKey    string
-	shareFSHost  string
-	shareFSKey   string
+	root         string
 )
 
 func init() {
@@ -31,8 +29,7 @@ func init() {
 	flag.StringVar(&accessID, "accessID", "", "oss accessID")
 	flag.StringVar(&accessKey, "accessKey", "", "oss accessKey")
 	flag.StringVar(&bucketName, "bucket", "", "oss bucket")
-	flag.StringVar(&shareFSHost, "share-fs-host", "http://gw.huabot.com", "ShareFS host")
-	flag.StringVar(&shareFSKey, "share-fs-key", "", "ShareFS key")
+	flag.StringVar(&root, "root", "images", "Image root path")
 	flag.Parse()
 }
 
@@ -52,28 +49,17 @@ func main() {
 
 func checkAlive() {
 	c := time.Tick(1 * time.Minute)
-	for now := range c {
+	for _ = range c {
 		client.Ping()
 		worker.Ping()
 	}
 }
 
 func doUpload(fileName string) error {
-	var (
-		err     error
-		rsp     *http.Response
-		fileUrl = shareFSHost + "/file/" + fileName + "?key=" + shareFSKey
-	)
 	var baseName = filepath.Base(fileName)
 
-	if rsp, err = http.Get(fileUrl); err != nil {
-		log.Printf("http.Get() failed (%s)\n", err)
-		return err
-	}
-	defer rsp.Body.Close()
-
-	if err = bucket.PutObject(baseName, rsp.Body); err != nil {
-		log.Printf("bucket.PutObject() failed (%s)", err)
+	if err := bucket.PutObjectFromFile(baseName, filepath.Join(root, fileName)); err != nil {
+		log.Printf("bucket.PutObjectFromFile() failed (%s)", err)
 		return err
 	}
 
