@@ -7,6 +7,8 @@ enable-save: true
 guetzli:
   command: guetzli
   output: guetzli
+  lock-count: 1
+  lock-name: guetzli
   delay: 432000
   # remove after 5 day
 
