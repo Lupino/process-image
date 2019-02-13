@@ -55,7 +55,7 @@ resizeImage ResizeConfig{..} env0 root = do
       case scale img of
         Nothing -> liftIO (errorM "PI.ResizeImage" $ "Not support image " ++ fn)
         Just out -> do
-          let outFileName = imageOutput ++ takeBaseName fn ++ imageSuffix
+          let outFileName = imageOutput </> takeBaseName fn ++ imageSuffix
               outFileName' = JobName $ packBS outFileName
 
           liftIO $ saveJpgImage 80 (root </> outFileName) out
