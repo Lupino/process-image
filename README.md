@@ -9,11 +9,8 @@ Recommand build `process-image` with [`stack`](https://docs.haskellstack.org/en/
     git clone https://github.com/Lupino/process-image.git
     cd process-image
     mkdir bin
-    echo 'local-bin-path: bin' >> stack.yaml
     stack build
     stack install
-    stack install share-fs-server
-    stack install periodicd
 
 Build `upload-file.go`
 
@@ -24,14 +21,19 @@ Build `upload-file.go`
     mv upload-file ../bin
     cd ..
 
+Install `periodicd`
+
+    wget https://github.com/Lupino/haskell-periodic/releases/download/v1.1.4.0/periodic-linux-v1.1.4.0.tar.bz2
+    cd bin
+    tar xvf ../periodic-linux-v1.1.4.0.tar.bz2
+    cd ..
+
 # Quick start
 
-    ./bin/share-fs-server -H 127.0.0.1 -p 8080 --path share-fs
-    ./bin/periodicd -H tcp://127.0.0.1:5000
+    ./bin/periodicd
     ./bin/process-image config.yml
-    ./bin/upload-file -periodic tcp://127.0.0.1:5000 -thread 10 -share-fs-host http://127.0.0.1:8080 -bucket youbucket -accessKey youkey -accessID youid
+    ./bin/upload-file -bucket youbucket -accessKey youkey -accessID youid
 
 # Process an image
 
-    curl -XPUT -F @icon.png http://127.0.0.1:8080/file/icon.png
-    echo icon.png | ./bin/submit-image -H 127.0.0.1 -P 5000 -f upload-next-guetzli,resize-image-fw500,resize-image-fw192,resize-image-fw64
+    periodic submit save icon.png @icon.png
