@@ -59,16 +59,18 @@ resizeImage ResizeConfig{..} env0 root = do
         height img = imageWidth * (P.imageHeight img) `div` (P.imageWidth img)
 
         scale :: DynamicImage -> Maybe DynamicImage
-        scale (ImageY8 img) = Just $ ImageY8 $ scaleBilinear imageWidth (height img) img
-        scale (ImageY16 img) = Just $ ImageY16 $ scaleBilinear imageWidth (height img) img
-        scale (ImageY32 img) = Just $ ImageY32 $ scaleBilinear imageWidth (height img) img
-        scale (ImageYA8 img) = Just $ ImageYA8 $ scaleBilinear imageWidth (height img) img
-        scale (ImageYA16 img) = Just $ ImageYA16 $ scaleBilinear imageWidth (height img) img
-        scale (ImageRGB8 img) = Just $ ImageRGB8 $ scaleBilinear imageWidth (height img) img
-        scale (ImageRGB16 img) = Just $ ImageRGB16 $ scaleBilinear imageWidth (height img) img
-        scale (ImageRGBA8 img) = Just $ ImageRGBA8 $ scaleBilinear imageWidth (height img) img
-        scale (ImageRGBA16 img) = Just $ ImageRGBA16 $ scaleBilinear imageWidth (height img) img
-        scale (ImageYCbCr8 img) = Just $ ImageYCbCr8 $ scaleBilinear imageWidth (height img) img
-        scale (ImageCMYK8 img) = Just $ ImageCMYK8 $ scaleBilinear imageWidth (height img) img
-        scale (ImageCMYK16 img) = Just $ ImageCMYK16 $ scaleBilinear imageWidth (height img) img
-        scale _ = Nothing
+        scale (ImageY8 img)     = Just $ ImageY8 $ scale' img
+        scale (ImageY16 img)    = Just $ ImageY16 $ scale' img
+        scale (ImageY32 img)    = Just $ ImageY32 $ scale' img
+        scale (ImageYA8 img)    = Just $ ImageYA8 $ scale' img
+        scale (ImageYA16 img)   = Just $ ImageYA16 $ scale' img
+        scale (ImageRGB8 img)   = Just $ ImageRGB8 $ scale' img
+        scale (ImageRGB16 img)  = Just $ ImageRGB16 $ scale' img
+        scale (ImageRGBA8 img)  = Just $ ImageRGBA8 $ scale' img
+        scale (ImageRGBA16 img) = Just $ ImageRGBA16 $ scale' img
+        scale (ImageYCbCr8 img) = Just $ ImageYCbCr8 $ scale' img
+        scale (ImageCMYK8 img)  = Just $ ImageCMYK8 $ scale' img
+        scale (ImageCMYK16 img) = Just $ ImageCMYK16 $ scale' img
+        scale _                 = Nothing
+
+        scale' img = scaleBilinear imageWidth (height img) img
