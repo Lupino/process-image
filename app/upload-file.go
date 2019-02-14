@@ -93,7 +93,7 @@ func uploadNextGuetzliHandle(job periodic.Job) {
 		return
 	}
 	job.Done()
-	client.SubmitJob("guetzli", job.Name, nil)
+	client.SubmitJob("guetzli", job.Name, "")
 }
 
 func removeRemoteFileHandle(job periodic.Job) {
