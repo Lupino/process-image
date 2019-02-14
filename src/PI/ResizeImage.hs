@@ -7,24 +7,17 @@ module PI.ResizeImage
   , ResizeConfig (..)
   ) where
 
-import           Codec.Picture          (DynamicImage (..), Image,
-                                         dynamicPixelMap, readImage,
+import           Codec.Picture          (DynamicImage (..), Image, readImage,
                                          saveJpgImage)
 import qualified Codec.Picture          as P (Image (..))
 import           Codec.Picture.Extra    (scaleBilinear)
 import           Control.Monad          (void)
-import qualified Control.Monad          as M (foldM)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson             (FromJSON, parseJSON, withObject, (.!=),
                                          (.:), (.:?))
-import           Data.ByteString.Char8  (ByteString)
-import qualified Data.ByteString.Lazy   as LB (toStrict)
-import           Data.Int               (Int64)
-import           Periodic.Client        (ClientEnv, ClientT, runClientT,
-                                         submitJob)
+import           Data.String            (fromString)
+import           Periodic.Client        (ClientEnv, runClientT, submitJob)
 import           Periodic.Job           (JobT, name, workDone)
-import           Periodic.Types         (JobName (..))
-import           PI.Utils
 import           System.FilePath        (takeBaseName, (</>))
 import           System.Log.Logger      (errorM)
 
@@ -32,7 +25,6 @@ data ResizeConfig = ResizeConfig { imageWidth    :: Int
                                  , imageOutput   :: FilePath
                                  , imageFuncName :: String
                                  , imageSuffix   :: String
-                                 , imageDelay    :: Int64
                                  }
   deriving (Show)
 
@@ -42,7 +34,6 @@ instance FromJSON ResizeConfig where
     imageFuncName <- o .: "func"
     imageOutput   <- o .:? "output" .!= "resize-image"
     imageSuffix   <- o .:? "suffix" .!= "_fw100.jpg"
-    imageDelay    <- o .:? "delay"  .!= 432000
     return ResizeConfig {..}
 
 resizeImage :: ResizeConfig -> ClientEnv -> FilePath -> JobT IO ()
@@ -56,12 +47,11 @@ resizeImage ResizeConfig{..} env0 root = do
         Nothing -> liftIO (errorM "PI.ResizeImage" $ "Not support image " ++ fn)
         Just out -> do
           let outFileName = imageOutput </> takeBaseName fn ++ imageSuffix
-              outFileName' = JobName $ packBS outFileName
 
-          liftIO $ saveJpgImage 80 (root </> outFileName) out
-          liftIO $ runClientT env0 $ do
-            void $ submitJob "upload-next-guetzli" outFileName' Nothing Nothing
-            void $ submitJob "remove" outFileName' Nothing $ Just imageDelay
+          liftIO $ do
+            saveJpgImage 80 (root </> outFileName) out
+            runClientT env0 $
+              void $ submitJob "upload-next-guetzli" (fromString outFileName) Nothing Nothing
 
   workDone
 

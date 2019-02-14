@@ -43,6 +43,7 @@ func main() {
 	worker = periodic.NewWorker(thread)
 	worker.Connect(periodicHost)
 	worker.AddFunc("upload", uploadHandle)
+	worker.AddFunc("upload-next-remove", uploadNextRemoveHandle)
 	worker.AddFunc("upload-next-guetzli", uploadNextGuetzliHandle)
 	worker.AddFunc("remove-remote", removeRemoteFileHandle)
 	worker.AddFunc("get-remote", getRemoteFileHandle)
@@ -94,6 +95,20 @@ func uploadNextGuetzliHandle(job periodic.Job) {
 	}
 	job.Done()
 	client.SubmitJob("guetzli", job.Name, "")
+}
+
+func uploadNextRemoveHandle(job periodic.Job) {
+	if err := doUpload(job.Name); err != nil {
+		if job.Raw.Counter > 20 {
+			job.Done()
+			return
+		}
+		job.SchedLater(int(job.Raw.Counter)*10, 1)
+		return
+	}
+	job.Done()
+	timestamp := time.Now().Unix()
+	client.SubmitJob("remove", job.Name, "", timestamp+300)
 }
 
 func removeRemoteFileHandle(job periodic.Job) {

@@ -11,7 +11,7 @@ import           Data.String            (fromString)
 import           Periodic.Client        (ClientEnv, ClientT, runClientT,
                                          submitJob)
 import           Periodic.Job           (JobT, name, workDone, workload)
-import           Periodic.Types         (FuncName (..), JobName (..))
+import           Periodic.Types         (JobName (..))
 import           System.FilePath        ((</>))
 
 saveFile :: [String] -> ClientEnv -> FilePath -> JobT IO ()
@@ -21,8 +21,7 @@ saveFile fns env0 root = do
   w <- workload
   liftIO $ B.writeFile (root </> n) w
   liftIO $ runClientT env0 $ do
-    void $ submitJob "remove" jn Nothing $ Just 43200
-    void $ submitJob "upload-next-guetzli" jn Nothing Nothing
+    void $ submitJob "upload-next-guetzli" jn Nothing $ Just 300
     mapM_ (doSubmit jn) fns
 
   workDone
