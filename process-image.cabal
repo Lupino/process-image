@@ -16,7 +16,6 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     PI
-                     , PI.Utils
                      , PI.GuetzliImage
                      , PI.ResizeImage
                      , PI.RemoveFile
