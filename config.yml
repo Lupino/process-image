@@ -1,5 +1,5 @@
 periodic: unix:///tmp/periodic.sock
-thread: 2
+thread: 10
 root: images
 enable-guetzli: true
 enable-remove: true
@@ -9,25 +9,21 @@ guetzli:
   output: guetzli
   lock-count: 1
   lock-name: guetzli
-  delay: 432000
-  # remove after 5 day
 
 resizes:
-  - func: resize-image-fw192
-    width: 100
+  - func: resize-image-fw1024
+    width: 1024
     output: resize-image
-    suffix: _fw192.jpg
-    delay: 432000
-    # remove after 5 day
+    suffix: _fw1024.jpg
   - func: resize-image-fw500
     width: 500
     output: resize-image
     suffix: _fw500.jpg
-    delay: 432000
-    # remove after 5 day
+  - func: resize-image-fw192
+    width: 192
+    output: resize-image
+    suffix: _fw192.jpg
   - func: resize-image-fw64
-    width: 500
+    width: 64
     output: resize-image
     suffix: _fw64.jpg
-    delay: 432000
-    # remove after 5 day
