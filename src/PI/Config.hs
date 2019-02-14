@@ -6,8 +6,6 @@ module PI.Config
   ) where
 
 import           Data.Aeson      (FromJSON, parseJSON, withObject, (.!=), (.:?))
-import           Data.Int        (Int64)
-
 import           PI.GuetzliImage (GuetzliConfig, defaultGuetzliConfig)
 import           PI.ResizeImage  (ResizeConfig)
 

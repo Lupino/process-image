@@ -42,7 +42,7 @@ resizeImage ResizeConfig{..} env0 root = do
   decoded <- liftIO $ readImage $ root </> fn
   case decoded of
     Left err  -> liftIO (errorM "PI.ResizeImage" err)
-    Right img -> do
+    Right img ->
       case scale img of
         Nothing -> liftIO (errorM "PI.ResizeImage" $ "Not support image " ++ fn)
         Just out -> do
@@ -56,7 +56,7 @@ resizeImage ResizeConfig{..} env0 root = do
   workDone
 
   where height :: Image a -> Int
-        height img = imageWidth * (P.imageHeight img) `div` (P.imageWidth img)
+        height img = imageWidth * P.imageHeight img `div` P.imageWidth img
 
         scale :: DynamicImage -> Maybe DynamicImage
         scale (ImageY8 img)     = Just $ ImageY8 $ scale' img
