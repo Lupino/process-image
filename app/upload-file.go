@@ -20,6 +20,7 @@ var (
 	endpoint     string
 	accessID     string
 	accessKey    string
+	remotePath   string
 	root         string
 )
 
@@ -30,6 +31,7 @@ func init() {
 	flag.StringVar(&accessID, "accessID", "", "oss accessID")
 	flag.StringVar(&accessKey, "accessKey", "", "oss accessKey")
 	flag.StringVar(&bucketName, "bucket", "", "oss bucket")
+	flag.StringVar(&remotePath, "remote-path", "/", "oss bucket path")
 	flag.StringVar(&root, "root", "images", "Image root path")
 	flag.Parse()
 }
@@ -61,7 +63,7 @@ func checkAlive() {
 func doUpload(fileName string) error {
 	var baseName = filepath.Base(fileName)
 
-	if err := bucket.PutObjectFromFile(baseName, filepath.Join(root, fileName)); err != nil {
+	if err := bucket.PutObjectFromFile(filepath.Join(remotePath, baseName), filepath.Join(root, fileName)); err != nil {
 		log.Printf("bucket.PutObjectFromFile() failed (%s)", err)
 		return err
 	}
@@ -97,7 +99,7 @@ func uploadNextGuetzliHandle(job periodic.Job) {
 func removeRemoteFileHandle(job periodic.Job) {
 	var baseName = filepath.Base(job.Name)
 
-	if err := bucket.DeleteObject(baseName); err != nil {
+	if err := bucket.DeleteObject(filepath.Join(remotePath, baseName)); err != nil {
 		log.Printf("bucket.DeleteObject() failed (%s)", err)
 		if job.Raw.Counter > 20 {
 			job.Done()
@@ -113,7 +115,7 @@ func removeRemoteFileHandle(job periodic.Job) {
 func doGetRemoteFile(fileName string) ([]byte, error) {
 	var baseName = filepath.Base(fileName)
 
-	body, err := bucket.GetObject(baseName)
+	body, err := bucket.GetObject(filepath.Join(remotePath, baseName))
 	if err != nil {
 		log.Printf("bucket.GetObject() failed (%s)", err)
 		return nil, err
