@@ -16,8 +16,8 @@ import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson             (FromJSON, parseJSON, withObject, (.!=),
                                          (.:), (.:?))
 import           Data.String            (fromString)
-import           Periodic.Client        (ClientEnv, runClientT, submitJob)
-import           Periodic.Job           (JobT, name, workDone)
+import           Periodic.Client        (ClientEnv, runClientM, submitJob)
+import           Periodic.Job           (JobM, name, workDone)
 import           System.FilePath        (takeBaseName, (</>))
 import           System.Log.Logger      (errorM)
 
@@ -36,7 +36,7 @@ instance FromJSON ResizeConfig where
     imageSuffix   <- o .:? "suffix" .!= "_fw100.jpg"
     return ResizeConfig {..}
 
-resizeImage :: ResizeConfig -> ClientEnv -> FilePath -> JobT IO ()
+resizeImage :: ResizeConfig -> ClientEnv -> FilePath -> JobM ()
 resizeImage ResizeConfig{..} env0 root = do
   fn <- name
   decoded <- liftIO $ readImage $ root </> fn
@@ -50,7 +50,7 @@ resizeImage ResizeConfig{..} env0 root = do
 
           liftIO $ do
             saveJpgImage 80 (root </> outFileName) out
-            runClientT env0 $
+            runClientM env0 $
               void $ submitJob "upload-next-guetzli" (fromString outFileName) Nothing Nothing
 
   workDone

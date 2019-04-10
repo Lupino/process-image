@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-13.6
+resolver: lts-13.16
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,9 +40,8 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-- crc-0.1.0.0
 - git: https://github.com/Lupino/haskell-periodic.git
-  commit: c5c9516648487bc065cab402f1a5854107025097
+  commit: 2baf554a02e75d4675e3d9a6c0083aafd5fb95e5
   subdirs:
   - periodic-client
   - periodic-common
@@ -70,3 +69,7 @@ extra-package-dbs: []
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
+
+nix:
+  packages:
+  - zlib

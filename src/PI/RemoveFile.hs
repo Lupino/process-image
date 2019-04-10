@@ -4,11 +4,11 @@ module PI.RemoveFile
 
 import           Control.Monad          (when)
 import           Control.Monad.IO.Class (liftIO)
-import           Periodic.Job           (JobT, name, workDone)
+import           Periodic.Job           (JobM, name, workDone)
 import qualified System.Directory       as D (doesFileExist, removeFile)
 import           System.FilePath        ((</>))
 
-removeFile :: FilePath -> JobT IO ()
+removeFile :: FilePath -> JobM ()
 removeFile root = do
   n <- name
   exists <- liftIO $ D.doesFileExist $ root </> n

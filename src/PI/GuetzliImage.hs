@@ -12,8 +12,8 @@ import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson             (FromJSON, parseJSON, withObject, (.!=),
                                          (.:?))
 import           Data.String            (fromString)
-import           Periodic.Client        (ClientEnv, runClientT, submitJob)
-import           Periodic.Job           (JobT, count, name, schedLater',
+import           Periodic.Client        (ClientEnv, runClientM, submitJob)
+import           Periodic.Job           (JobM, count, name, schedLater',
                                          withLock, workDone)
 import           Periodic.Types         (LockName (..))
 import           System.Exit            (ExitCode (..))
@@ -44,7 +44,7 @@ defaultGuetzliConfig = GuetzliConfig { guetzliCommand = "guetzli"
                                      , guetzliLCount = 1
                                      }
 
-guetzliImage' :: GuetzliConfig -> ClientEnv -> FilePath -> JobT IO ()
+guetzliImage' :: GuetzliConfig -> ClientEnv -> FilePath -> JobM ()
 guetzliImage' GuetzliConfig{..} env0 root = do
   fn <- name
   let outFileName = guetzliOutput </> takeFileName fn
@@ -59,7 +59,7 @@ guetzliImage' GuetzliConfig{..} env0 root = do
 
     ExitSuccess   -> do
       liftIO
-        . runClientT env0 $ do
+        . runClientM env0 $ do
           void $ submitJob "remove" (fromString fn) Nothing $ Just 300
           void $ submitJob "upload-next-remove" (fromString outFileName) Nothing Nothing
 
@@ -68,8 +68,8 @@ guetzliImage' GuetzliConfig{..} env0 root = do
   where later :: Int -> Int
         later c = c * (10 + c)
 
-guetzliImage :: GuetzliConfig -> ClientEnv -> FilePath -> JobT IO ()
+guetzliImage :: GuetzliConfig -> ClientEnv -> FilePath -> JobM ()
 guetzliImage c@GuetzliConfig{..} env0 = f guetzliLName . guetzliImage' c env0
-  where f :: Maybe String -> JobT IO () -> JobT IO ()
+  where f :: Maybe String -> JobM () -> JobM ()
         f Nothing  = id
         f (Just n) = withLock (LockName $ fromString n) guetzliLCount

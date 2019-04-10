@@ -11,7 +11,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           Data.ByteString.Char8  (pack)
 import           Periodic.Client        (ClientEnv)
 import           Periodic.Types         (FuncName (..))
-import           Periodic.Worker        (WorkerT, addFunc)
+import           Periodic.Worker        (WorkerM, addFunc)
 import           PI.Config
 import           PI.GuetzliImage
 import           PI.RemoveFile
@@ -20,7 +20,7 @@ import           PI.SaveFile
 import           System.Directory       (createDirectoryIfMissing)
 import           System.FilePath        ((</>))
 
-initialWorker :: ClientEnv -> Config -> WorkerT IO ()
+initialWorker :: ClientEnv -> Config -> WorkerM ()
 initialWorker env0 Config{..} = do
   liftIO $ do
     createDirectoryIfMissing True root
@@ -30,7 +30,7 @@ initialWorker env0 Config{..} = do
   when enableGuetzli $ addFunc "guetzli" $ guetzliImage guetzliConfig env0 root
   mapM_ initialResizeImage resizesConfig
 
-  where initialResizeImage :: ResizeConfig -> WorkerT IO ()
+  where initialResizeImage :: ResizeConfig -> WorkerM ()
         initialResizeImage conf = do
           liftIO $ createDirectoryIfMissing True $ root </> imageOutput conf
           addFunc (FuncName $ funcName conf) $ resizeImage conf env0 root
