@@ -12,9 +12,8 @@ import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson             (FromJSON, parseJSON, withObject, (.!=),
                                          (.:?))
 import           Data.String            (fromString)
-import           Periodic.Client        (ClientEnv, runClientM, submitJob)
 import           Periodic.Job           (JobM, count, name, schedLater',
-                                         withLock, workDone)
+                                         submitJob, withLock, workDone)
 import           Periodic.Types         (LockName (..))
 import           System.Exit            (ExitCode (..))
 import           System.FilePath        (takeFileName, (</>))
@@ -44,8 +43,8 @@ defaultGuetzliConfig = GuetzliConfig { guetzliCommand = "guetzli"
                                      , guetzliLCount = 1
                                      }
 
-guetzliImage' :: GuetzliConfig -> ClientEnv -> FilePath -> JobM ()
-guetzliImage' GuetzliConfig{..} env0 root = do
+guetzliImage' :: GuetzliConfig -> FilePath -> JobM ()
+guetzliImage' GuetzliConfig{..} root = do
   fn <- name
   let outFileName = guetzliOutput </> takeFileName fn
   code <- liftIO $ rawSystem guetzliCommand [root </> fn, root </> outFileName]
@@ -58,18 +57,16 @@ guetzliImage' GuetzliConfig{..} env0 root = do
                 else schedLater' (fromIntegral $ later c) 1
 
     ExitSuccess   -> do
-      liftIO
-        . runClientM env0 $ do
-          void $ submitJob "remove" (fromString fn) Nothing $ Just 300
-          void $ submitJob "upload-next-remove" (fromString outFileName) Nothing Nothing
+      void $ submitJob "remove" (fromString fn) "" 300 0
+      void $ submitJob "upload-next-remove" (fromString outFileName) "" 0 0
 
       workDone
 
   where later :: Int -> Int
         later c = c * (10 + c)
 
-guetzliImage :: GuetzliConfig -> ClientEnv -> FilePath -> JobM ()
-guetzliImage c@GuetzliConfig{..} env0 = f guetzliLName . guetzliImage' c env0
+guetzliImage :: GuetzliConfig -> FilePath -> JobM ()
+guetzliImage c@GuetzliConfig{..} = f guetzliLName . guetzliImage' c
   where f :: Maybe String -> JobM () -> JobM ()
         f Nothing  = id
         f (Just n) = withLock (LockName $ fromString n) guetzliLCount

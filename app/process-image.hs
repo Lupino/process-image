@@ -3,13 +3,10 @@ module Main
     main
   ) where
 
-import           PI                 (Config (..), initialWorker)
-
 import           Data.Yaml          (decodeFileThrow)
+import           Periodic.Worker    (startWorkerM, work)
+import           PI                 (Config (..), initialWorker)
 import           System.Environment (getArgs)
-
-import           Periodic.Client    (close, open, runClientM)
-import           Periodic.Worker    (runWorkerM, work)
 
 defaultConfigFile :: FilePath
 defaultConfigFile = "config.yml"
@@ -27,9 +24,6 @@ main = do
 
 program :: Config -> IO ()
 program config@Config{periodicHost = host, threadNum = thread} = do
-  clientEnv <- open host
-  runWorkerM host $ do
-    initialWorker clientEnv config
+  startWorkerM host $ do
+    initialWorker config
     work thread
-
-  runClientM clientEnv close

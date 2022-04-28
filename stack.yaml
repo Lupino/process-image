@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-13.16
+resolver: lts-19.4
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,8 +40,14 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
+- git: https://github.com/Lupino/metro.git
+  commit: 2e8a036168da13f90dbf8fc3b59d95cf5315949d
+  subdirs:
+  - .
+  - map-io
+  - metro-socket
 - git: https://github.com/Lupino/haskell-periodic.git
-  commit: 2baf554a02e75d4675e3d9a6c0083aafd5fb95e5
+  commit: 7603c6f99a94682ec904295e5da9eb4f52c2b627
   subdirs:
   - periodic-client
   - periodic-common
@@ -69,7 +75,3 @@ extra-package-dbs: []
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
-
-nix:
-  packages:
-  - zlib
