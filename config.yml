@@ -5,7 +5,6 @@ enable-guetzli: true
 enable-remove: true
 enable-save: true
 guetzli:
-  command: ./bin/guetzli
   output: guetzli
   lock-count: 1
   lock-name: guetzli

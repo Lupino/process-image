@@ -1,9 +1,10 @@
+cabal-version:       2.2
 name:                process-image
 version:             0.1.0.0
 -- synopsis:
 -- description:
 homepage:            https://github.com/Lupino/process-image#readme
-license:             BSD3
+license:             MIT
 license-file:        LICENSE
 author:              Li Meng Jun
 maintainer:          lmjubuntu@gmail.com
@@ -11,9 +12,34 @@ copyright:           MIT
 category:            value
 build-type:          Simple
 extra-source-files:  README.md
-cabal-version:       >=1.10
 
 library
+  extra-libraries:     png
+  include-dirs:        guetzli
+                       guetzli/third_party/butteraugli
+                       cxx-src
+  cxx-sources:         guetzli/guetzli/butteraugli_comparator.cc
+                       guetzli/guetzli/dct_double.cc
+                       guetzli/guetzli/debug_print.cc
+                       guetzli/guetzli/entropy_encode.cc
+                       guetzli/guetzli/fdct.cc
+                       guetzli/guetzli/gamma_correct.cc
+                       -- guetzli/guetzli/guetzli.cc
+                       guetzli/guetzli/idct.cc
+                       guetzli/guetzli/jpeg_data.cc
+                       guetzli/guetzli/jpeg_data_decoder.cc
+                       guetzli/guetzli/jpeg_data_encoder.cc
+                       guetzli/guetzli/jpeg_data_reader.cc
+                       guetzli/guetzli/jpeg_data_writer.cc
+                       guetzli/guetzli/jpeg_huffman_decode.cc
+                       guetzli/guetzli/output_image.cc
+                       guetzli/guetzli/preprocess_downsample.cc
+                       guetzli/guetzli/processor.cc
+                       guetzli/guetzli/quality.cc
+                       guetzli/guetzli/quantize.cc
+                       guetzli/guetzli/score.cc
+                       guetzli/third_party/butteraugli/butteraugli/butteraugli.cc
+                       cxx-src/guetzli.cc
   hs-source-dirs:      src
   exposed-modules:     PI
                      , PI.GuetzliImage
@@ -27,7 +53,6 @@ library
                      , bytestring
                      , hslogger
 
-                     , process
                      , filepath
                      , aeson
 
@@ -35,6 +60,7 @@ library
                      , JuicyPixels-extra
                      , text
                      , directory
+                     , inline-c-cpp
   default-language:    Haskell2010
 
 executable process-image
