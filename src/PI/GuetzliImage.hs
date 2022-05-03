@@ -39,9 +39,9 @@ data GuetzliConfig = GuetzliConfig
 
 instance FromJSON GuetzliConfig where
   parseJSON = withObject "GuetzliConfig" $ \o -> do
-    guetzliOutput  <- o .:? "output"  .!= "guetzli"
-    guetzliLName   <- o .:? "lock-name"
-    guetzliLCount  <- o .:? "lock-count" .!= 1
+    guetzliOutput <- o .:? "output"  .!= "guetzli"
+    guetzliLName  <- o .:? "lock-name"
+    guetzliLCount <- o .:? "lock-count" .!= 1
     return GuetzliConfig {..}
 
 defaultGuetzliConfig :: GuetzliConfig
@@ -51,8 +51,8 @@ defaultGuetzliConfig = GuetzliConfig
   , guetzliLCount = 1
   }
 
-guetzliMain0 :: ByteString -> ByteString -> IO CInt
-guetzliMain0 fp1 fp2 = [C.exp| int {guetzliMain($(int len1), $bs-ptr:fp1, $(int len2), $bs-ptr:fp2)}|]
+guetzliMain :: ByteString -> ByteString -> IO CInt
+guetzliMain fp1 fp2 = [C.exp| int {guetzliMain($(int len1), $bs-ptr:fp1, $(int len2), $bs-ptr:fp2)}|]
   where len1 = fromIntegral $ B.length fp1
         len2 = fromIntegral $ B.length fp2
 
@@ -60,7 +60,7 @@ guetzliImage' :: GuetzliConfig -> FilePath -> JobM ()
 guetzliImage' GuetzliConfig{..} root = do
   fn <- name
   let outFileName = guetzliOutput </> takeFileName fn
-  code <- liftIO $ guetzliMain0 (B.pack $ root </> fn) (B.pack $ root </> outFileName)
+  code <- liftIO $ guetzliMain (B.pack $ root </> fn) (B.pack $ root </> outFileName)
 
   case code of
     0   -> do
