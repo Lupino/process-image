@@ -14,7 +14,10 @@ build-type:          Simple
 extra-source-files:  README.md
 
 library
-  pkgconfig-depends:   libpng
+  if os(darwin)
+    extra-libraries:     png
+  else
+    pkgconfig-depends:   libpng
   include-dirs:        guetzli
                        guetzli/third_party/butteraugli
                        cxx-src
