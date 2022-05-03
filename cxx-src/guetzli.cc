@@ -152,14 +152,11 @@ bool ReadPNG(const std::string& data, int* xsize, int* ysize,
   return true;
 }
 
-std::string ReadFileOrDie(const char* filename, int *r) {
-  std::string result;
-
+int ReadFileOrDie(const char* filename, std::string *result) {
   FILE* f = fopen(filename, "rb");
   if (!f) {
     perror("Can't open input file");
-    *r = 1;
-    return result;
+    return 1;
   }
 
   off_t buffer_size = 8192;
@@ -168,13 +165,11 @@ std::string ReadFileOrDie(const char* filename, int *r) {
     buffer_size = std::max<off_t>(ftell(f), 1);
     if (fseek(f, 0, SEEK_SET) != 0) {
       perror("fseek");
-      *r = 1;
-      return result;
+      return 1;
     }
   } else if (ferror(f)) {
     perror("fseek");
-    *r = 1;
-    return result;
+    return 1;
   }
 
   std::unique_ptr<char[]> buf(new char[buffer_size]);
@@ -182,15 +177,13 @@ std::string ReadFileOrDie(const char* filename, int *r) {
     size_t read_bytes = fread(buf.get(), sizeof(char), buffer_size, f);
     if (ferror(f)) {
       perror("fread");
-      *r = 1;
-      return result;
+      return 1;
     }
-    result.append(buf.get(), read_bytes);
+    result -> append(buf.get(), read_bytes);
   }
 
   fclose(f);
-  *r = 0;
-  return result;
+  return 0;
 }
 
 int WriteFileOrDie(const char* filename, const std::string& contents) {
@@ -217,23 +210,23 @@ void TerminateHandler() {
 }
 }  // namespace
 
-int guetzliMain(int insize, char * infile, int outsize, char* outfile) {
+int guetzliMain(int insize, char * infile, int outsize, char* outfile, int verbose, int quality, int memlimit_mb) {
   std::set_terminate(TerminateHandler);
 
   infile[insize] = '\0';
   outfile[outsize] = '\0';
 
-  int verbose = 0;
-  int quality = kDefaultJPEGQuality;
-  int memlimit_mb = kDefaultMemlimitMB;
-  int r = 0;
-  std::string in_data = ReadFileOrDie(infile, &r);
+  // int verbose = 0;
+  // int quality = kDefaultJPEGQuality;
+  // int memlimit_mb = kDefaultMemlimitMB;
+  std::string in_data;
+  std::string out_data;
 
+  int r = ReadFileOrDie(infile, &in_data);
   if (r == 1) {
     return 1;
   }
 
-  std::string out_data;
 
   guetzli::Params params;
   params.butteraugli_target = static_cast<float>(
