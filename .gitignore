@@ -1,1 +1,6 @@
 .stack-work
+go-src/libbucket.a
+go-src/libbucket.dylib
+go-src/libbucket.so
+go-src/libbucket.h
+config.yml

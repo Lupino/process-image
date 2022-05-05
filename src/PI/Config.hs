@@ -5,19 +5,23 @@ module PI.Config
   ( Config (..)
   ) where
 
-import           Data.Aeson      (FromJSON, parseJSON, withObject, (.!=), (.:?))
+import           Data.Aeson      (FromJSON, parseJSON, withObject, (.!=), (.:),
+                                  (.:?))
 import           PI.GuetzliImage (GuetzliConfig, defaultGuetzliConfig)
 import           PI.ResizeImage  (ResizeConfig)
+import           PI.UploadFile   (BucketConfig)
 
-data Config = Config { periodicHost  :: String
-                     , threadNum     :: Int
-                     , root          :: FilePath
-                     , guetzliConfig :: GuetzliConfig
-                     , resizesConfig :: [ResizeConfig]
-                     , enableRemove  :: Bool
-                     , enableSave    :: Bool
-                     , enableGuetzli :: Bool
-                     }
+data Config = Config
+  { periodicHost  :: String
+  , threadNum     :: Int
+  , root          :: FilePath
+  , guetzliConfig :: GuetzliConfig
+  , resizesConfig :: [ResizeConfig]
+  , enableRemove  :: Bool
+  , enableSave    :: Bool
+  , enableGuetzli :: Bool
+  , bucketConfig  :: BucketConfig
+  }
   deriving (Show)
 
 instance FromJSON Config where
@@ -30,4 +34,5 @@ instance FromJSON Config where
     enableRemove  <- o .:? "enable-remove"   .!= False
     enableSave    <- o .:? "enable-save"     .!= False
     enableGuetzli <- o .:? "enable-guetzli"  .!= False
+    bucketConfig  <- o .:  "bucket"
     return Config {..}

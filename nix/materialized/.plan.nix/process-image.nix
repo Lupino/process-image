@@ -44,12 +44,17 @@
           (hsPkgs."JuicyPixels-extra" or (errorHandler.buildDepError "JuicyPixels-extra"))
           (hsPkgs."text" or (errorHandler.buildDepError "text"))
           (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
+          (hsPkgs."inline-c" or (errorHandler.buildDepError "inline-c"))
           (hsPkgs."inline-c-cpp" or (errorHandler.buildDepError "inline-c-cpp"))
           ];
-        libs = [ (pkgs."png" or (errorHandler.sysDepError "png")) ];
+        libs = [
+          (pkgs."bucket" or (errorHandler.sysDepError "bucket"))
+          ] ++ (pkgs.lib).optional (system.isOsx) (pkgs."png" or (errorHandler.sysDepError "png"));
+        pkgconfig = (pkgs.lib).optional (!system.isOsx) (pkgconfPkgs."libpng" or (errorHandler.pkgConfDepError "libpng"));
         buildable = true;
         modules = [
           "PI"
+          "PI/UploadFile"
           "PI/GuetzliImage"
           "PI/ResizeImage"
           "PI/RemoveFile"

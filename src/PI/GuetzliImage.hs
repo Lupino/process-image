@@ -24,11 +24,10 @@ import           Periodic.Types         (LockName (..))
 import           System.FilePath        (takeFileName, (</>))
 import           System.Log.Logger      (errorM)
 
-C.context (C.baseCtx <> C.cppCtx <> C.bsCtx <> C.fptrCtx <> C.funCtx)
+C.context (C.cppCtx <> C.bsCtx)
 
 C.include "<stdio.h>"
 C.include "<guetzli.h>"
-
 
 data GuetzliConfig = GuetzliConfig
   { guetzliOutput     :: FilePath

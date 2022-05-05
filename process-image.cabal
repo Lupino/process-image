@@ -15,9 +15,10 @@ extra-source-files:  README.md
 
 library
   if os(darwin)
-    extra-libraries:     png
+    extra-libraries:   png
   else
-    pkgconfig-depends:   libpng
+    pkgconfig-depends: libpng
+  extra-libraries:     bucket
   include-dirs:        guetzli
                        guetzli/third_party/butteraugli
                        cxx-src
@@ -45,6 +46,7 @@ library
                        cxx-src/guetzli.cc
   hs-source-dirs:      src
   exposed-modules:     PI
+                     , PI.UploadFile
                      , PI.GuetzliImage
                      , PI.ResizeImage
                      , PI.RemoveFile
@@ -63,6 +65,7 @@ library
                      , JuicyPixels-extra
                      , text
                      , directory
+                     , inline-c
                      , inline-c-cpp
   default-language:    Haskell2010
 

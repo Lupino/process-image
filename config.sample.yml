@@ -12,6 +12,13 @@ guetzli:
   quality: 95
   memlimit_mb: 6000
 
+bucket:
+  access_id:
+  access_key:
+  name: huabot
+  endpoint: oss-cn-hangzhou.aliyuncs.com
+  root_path: /
+
 resizes:
   - func: resize-image-fw1024
     width: 1024

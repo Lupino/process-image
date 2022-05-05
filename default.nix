@@ -15,6 +15,11 @@ let
   overlays = haskellNix.overlays ++ [
     (self: super: {
         libpng = super.libpng.overrideAttrs (_: { configureFlags = ["--enable-static"];});
+        bucket = super.stdenv.mkDerivation {
+            name = "bucket";
+            src = super.lib.cleanSource ./go-src;
+            buildInputs = [super.go];
+        };
     })
   ];
   pkgs = import
@@ -33,7 +38,7 @@ in pkgs.haskell-nix.cabalProject {
     };
     index-state = "2022-04-12T00:00:00Z";
     index-sha256 = "9bf96168377dff50dcfbe4f9dbc5787a5059541644dee07e4992e1b21abd0bb9";
-    plan-sha256 = if compiler-nix-name == "ghc922" then "0wjdfq7g208b1wl0fnclnll4njsb1pmr42ymb4yl57278vvaclpn" else null;
+    plan-sha256 = if compiler-nix-name == "ghc922" then "0sbambmwp61g3sf21mmghgpcj83agzx4pqfvzqinsxj0f9fvdni6" else null;
     materialized = if compiler-nix-name == "ghc922" then ./nix/materialized else null;
     # Specify the GHC version to use.
     compiler-nix-name = compiler-nix-name;
