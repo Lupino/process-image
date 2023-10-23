@@ -22,6 +22,7 @@ library
   include-dirs:        guetzli
                        guetzli/third_party/butteraugli
                        cxx-src
+                       go-src
   cxx-sources:         guetzli/guetzli/butteraugli_comparator.cc
                        guetzli/guetzli/dct_double.cc
                        guetzli/guetzli/debug_print.cc

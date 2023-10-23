@@ -1,16 +1,16 @@
 PLATFORM ?= musl64
 STRIP = strip
 PKG ?= process-image
-COMPILER = ghc922
 
 ifeq ($(PLATFORM),aarch64-multiplatform-musl)
 STRIP = aarch64-linux-gnu-strip
+COMPILER ?= ghc8107
 else
 ifeq ($(PLATFORM),muslpi)
 STRIP = armv6l-unknown-linux-musleabihf-strip
-COMPILER = ghc884
+COMPILER ?= ghc884
 else
-
+COMPILER ?= ghc947
 endif
 
 endif
@@ -32,13 +32,8 @@ process-image: dist/$(PLATFORM)/process-image
 package: process-image
 	cd dist/$(PLATFORM) && tar cjvf ../process-image-linux-$(PLATFORM).tar.bz2 *
 
-
-plan-sha256:
-	nix-build -A plan-nix.passthru.calculateMaterializedSha | bash
-
-materialized:
-	rm -r nix/materialized
-	nix-build 2>&1 | grep -om1 '/nix/store/.*-updateMaterialized' | bash
+update-sha256:
+	gawk -f nix/update-sha256.awk cabal.project > nix/sha256map.nix
 
 clean:
 	rm -rf dist
@@ -48,5 +43,4 @@ help:
 	@echo make PLATFORM=musl64
 	@echo make PLATFORM=aarch64-multiplatform-musl
 	@echo make clean
-	@echo make plan-sha256
-	@echo make materialized
+	@echo make update-sha256

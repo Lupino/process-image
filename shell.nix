@@ -1,4 +1,4 @@
-{ compiler-nix-name ? "ghc922", crossPlatforms ? ps: with ps; [] }:
+{ compiler-nix-name ? "ghc947", crossPlatforms ? ps: with ps; [] }:
 let
   project = import ./default.nix { compiler-nix-name = compiler-nix-name; };
 in

@@ -49,7 +49,7 @@ resizeImage ResizeConfig{..} root = do
 
           liftIO $ saveJpgImage 80 (root </> outFileName) out
           void $ submitJob "upload-next-guetzli" (fromString outFileName) "" 0 0
-  workDone
+  void workDone
 
   where height :: Image a -> Int
         height img = imageWidth * P.imageHeight img `div` P.imageWidth img

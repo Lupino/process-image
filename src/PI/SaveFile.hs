@@ -22,7 +22,7 @@ saveFile fns root = do
   void $ submitJob "upload-next-guetzli" jn "" 300 0
   mapM_ (doSubmit jn) fns
 
-  workDone
+  void workDone
 
   where doSubmit :: JobName -> String -> JobM ()
         doSubmit jn fn = void $ submitJob (fromString fn) jn  "" 0 0

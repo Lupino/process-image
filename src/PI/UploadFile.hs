@@ -99,12 +99,12 @@ uploadImage_ remotePath root next = do
   fn <- name
   code <- liftIO $ upload (B.pack remotePath) (B.pack $ root </> fn)
   case code of
-    0 -> workDone >> next
+    0 -> void workDone >> next
     _ -> do
       liftIO $ errorM "PI.GuetzliImage" $ "guetzli failed " ++ root </> fn
       c <- count
-      if c > 15 then workDone >> next
-                else schedLater' (fromIntegral $ later c) 1
+      if c > 15 then void workDone >> next
+                else void $ schedLater' (fromIntegral $ later c) 1
 
 
   where later :: Int -> Int

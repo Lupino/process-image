@@ -80,12 +80,12 @@ guetzliImage' GuetzliConfig{..} root = do
       void $ submitJob "remove" (fromString fn) "" 300 0
       void $ submitJob "upload-next-remove" (fromString outFileName) "" 0 0
 
-      workDone
+      void workDone
     _ -> do
       liftIO $ errorM "PI.GuetzliImage" $ "guetzli failed " ++ root </> fn
       c <- count
-      if c > 15 then workDone
-                else schedLater' (fromIntegral $ later c) 1
+      if c > 15 then void workDone
+                else void $ schedLater' (fromIntegral $ later c) 1
 
 
   where later :: Int -> Int
