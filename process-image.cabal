@@ -18,7 +18,9 @@ library
     extra-libraries:   png
   else
     pkgconfig-depends: libpng
-  extra-libraries:     bucket
+  extra-libraries:     bucket c++
+  cxx-options: -std=c++11 -Wall
+
   include-dirs:        guetzli
                        guetzli/third_party/butteraugli
                        cxx-src
@@ -66,8 +68,6 @@ library
                      , JuicyPixels-extra
                      , text
                      , directory
-                     , inline-c
-                     , inline-c-cpp
   default-language:    Haskell2010
 
 executable process-image

@@ -12,7 +12,11 @@ var (
 )
 
 //export GoUpload
-func GoUpload(remotePath, fileName string) int8 {
+func GoUpload(remotePath, fileName *C.char) int8 {
+  return goUpload(C.GoString(remotePath), C.GoString(fileName))
+}
+
+func goUpload(remotePath, fileName string) int8 {
 	var baseName = filepath.Base(fileName)
 
 	if err := bucket.PutObjectFromFile(filepath.Join(remotePath, baseName), fileName); err != nil {
@@ -24,7 +28,11 @@ func GoUpload(remotePath, fileName string) int8 {
 }
 
 //export GoInitBucket
-func GoInitBucket(accessID, accessKey, bucketName, endpoint string) int8 {
+func GoInitBucket(accessID, accessKey, bucketName, endpoint *C.char) int8 {
+	return goInitBucket(C.GoString(accessID), C.GoString(accessKey), C.GoString(bucketName), C.GoString(endpoint))
+}
+
+func goInitBucket(accessID, accessKey, bucketName, endpoint string) int8 {
 	var (
 		err     error
 		client  *oss.Client

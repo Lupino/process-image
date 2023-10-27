@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module PI.UploadFile
   ( BucketConfig (..)
@@ -16,18 +14,23 @@ import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson             (FromJSON, parseJSON, withObject, (.!=),
                                          (.:), (.:?))
 import           Data.ByteString        (ByteString)
-import qualified Data.ByteString.Char8  as B (length, pack)
+import qualified Data.ByteString.Char8  as B (pack, useAsCString)
 import           Foreign.C.Types
-import qualified Language.C.Inline      as C
+import           Foreign.C.String       (CString)
 import           Periodic.Job           (JobM, count, name, schedLater',
                                          submitJob, workDone)
 import           System.FilePath        ((</>))
 import           System.Log.Logger      (errorM)
 
-C.context (C.baseCtx <> C.bsCtx)
 
-C.include "<stdio.h>"
-C.include "<libbucket.h>"
+#include "libbucket.h"
+
+
+foreign import ccall
+  "GoUpload" go_upload :: CString -> CString -> IO CInt
+
+foreign import ccall
+  "GoInitBucket" go_init_bucket :: CString -> CString -> CString -> CString -> IO CInt
 
 
 data BucketConfig = BucketConfig
@@ -51,40 +54,17 @@ instance FromJSON BucketConfig where
 
 upload :: ByteString -> ByteString -> IO CInt
 upload remotePath fileName =
-  [C.block| int {
-    GoString remotePath;
-    remotePath.p = $bs-ptr:remotePath;
-    remotePath.n = $(int len1);
-    GoString fileName;
-    fileName.p = $bs-ptr:fileName;
-    fileName.n = $(int len2);
-    return (int)GoUpload(remotePath, fileName);
-  }|]
-
-  where len1 = fromIntegral $ B.length remotePath
-        len2 = fromIntegral $ B.length fileName
+  B.useAsCString remotePath $ \remotePathPtr ->
+  B.useAsCString fileName $ \fileNamePtr ->
+    go_upload remotePathPtr fileNamePtr
 
 initBucket_ :: ByteString -> ByteString -> ByteString -> ByteString -> IO CInt
 initBucket_ accessID accessKey bucketName endpoint =
-  [C.block| int {
-    GoString accessID;
-    accessID.p = $bs-ptr:accessID;
-    accessID.n = $(int len1);
-    GoString accessKey;
-    accessKey.p = $bs-ptr:accessKey;
-    accessKey.n = $(int len2);
-    GoString bucketName;
-    bucketName.p = $bs-ptr:bucketName;
-    bucketName.n = $(int len3);
-    GoString endpoint;
-    endpoint.p = $bs-ptr:endpoint;
-    endpoint.n = $(int len4);
-    return (int)GoInitBucket(accessID, accessKey, bucketName, endpoint);
-  }|]
-  where len1 = fromIntegral $ B.length accessID
-        len2 = fromIntegral $ B.length accessKey
-        len3 = fromIntegral $ B.length bucketName
-        len4 = fromIntegral $ B.length endpoint
+  B.useAsCString accessID $ \accessIDPtr ->
+  B.useAsCString accessKey $ \accessKeyPtr ->
+  B.useAsCString bucketName $ \bucketNamePtr ->
+  B.useAsCString endpoint $ \endpointPtr ->
+    go_init_bucket accessIDPtr accessKeyPtr bucketNamePtr endpointPtr
 
 initBucket :: BucketConfig -> IO CInt
 initBucket BucketConfig {..} = initBucket_ aid akey bn ep

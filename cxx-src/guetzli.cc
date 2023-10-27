@@ -210,7 +210,7 @@ void TerminateHandler() {
 }
 }  // namespace
 
-int guetzliMain(int insize, char * infile, int outsize, char* outfile, int verbose, int quality, int memlimit_mb) {
+extern int guetzliMain(int insize, char * infile, int outsize, char* outfile, int verbose, int quality, int memlimit_mb) {
   std::set_terminate(TerminateHandler);
 
   infile[insize] = '\0';

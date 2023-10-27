@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 module PI.GuetzliImage
   ( GuetzliConfig (..)
@@ -14,20 +12,17 @@ import           Control.Monad.IO.Class (liftIO)
 import           Data.Aeson             (FromJSON, parseJSON, withObject, (.!=),
                                          (.:?))
 import           Data.ByteString        (ByteString)
-import qualified Data.ByteString.Char8  as B (length, pack)
+import qualified Data.ByteString.Char8  as B (length, pack, useAsCString)
 import           Data.String            (fromString)
 import           Foreign.C.Types
-import qualified Language.C.Inline.Cpp  as C
+import           Foreign.C.String (CString)
 import           Periodic.Job           (JobM, count, name, schedLater',
                                          submitJob, withLock, workDone)
 import           Periodic.Types         (LockName (..))
 import           System.FilePath        (takeFileName, (</>))
 import           System.Log.Logger      (errorM)
 
-C.context (C.cppCtx <> C.bsCtx)
-
-C.include "<stdio.h>"
-C.include "<guetzli.h>"
+#include "guetzli.h"
 
 data GuetzliConfig = GuetzliConfig
   { guetzliOutput     :: FilePath
@@ -59,15 +54,15 @@ defaultGuetzliConfig = GuetzliConfig
   , guetzliMemlimitMb = 6000
   }
 
+
+foreign import ccall "guetzliMain" c_guetzliMain
+  :: CInt -> CString -> CInt -> CString -> CInt -> CInt -> CInt -> IO CInt
+
 guetzliMain :: ByteString -> ByteString -> Int -> Int -> Int -> IO CInt
 guetzliMain infile outfile verbose quality memlimit_mb =
-  [C.exp| int {guetzliMain($(int len1), $bs-ptr:infile, $(int len2), $bs-ptr:outfile, $(int cverbose), $(int cquality), $(int cmemlimit_mb))}|]
-  where len1         = fromIntegral $ B.length infile
-        len2         = fromIntegral $ B.length outfile
-        cverbose     = fromIntegral verbose
-        cquality     = fromIntegral quality
-        cmemlimit_mb = fromIntegral memlimit_mb
-
+  B.useAsCString infile $ \infilePtr ->
+  B.useAsCString outfile $ \outfilePtr ->
+    c_guetzliMain (fromIntegral $ B.length infile) infilePtr (fromIntegral $ B.length outfile) outfilePtr (fromIntegral verbose) (fromIntegral quality) (fromIntegral memlimit_mb)
 
 guetzliImage' :: GuetzliConfig -> FilePath -> JobM ()
 guetzliImage' GuetzliConfig{..} root = do
